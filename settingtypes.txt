@@ -1,9 +1,3 @@
-#    Make capes part of 3d Armor when enabled
-capes_add_to_3darmor (Add Capes to 3d Armor) bool false
-
-#    Enable/Disable the Example Cape "Someones Cape"
-example_cape (The Example Cape "Someones Cape" which grants fly_privs when worn and a 100% speed increase) bool false
-
 #    Enable Fly Animation
 fly_anim (Enable fly animation) bool true
 

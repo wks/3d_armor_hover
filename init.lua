@@ -8,7 +8,6 @@
 ------------------------------------------------------------
 --                   Sirrobzeroone                        --
 --               Licence code LGPL v2.1                   --
---                 Cape Textures - CC0                    --
 --   Blender Model/B3Ds as per base MTG - CC BY-SA 3.0    --
 --       except "3d_armor_trans.png" CC-BY-SA 3.0         --
 ------------------------------------------------------------
@@ -20,9 +19,6 @@ armor_hover = {}
 
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
-
-armor_hover.add_capes = minetest.settings:get_bool("capes_add_to_3darmor" ,false)
-armor_hover.example_cape = minetest.settings:get_bool("example_cape" ,false)
 
 local fly_anim = minetest.settings:get_bool("fly_anim" ,true)
 local fall_anim = minetest.settings:get_bool("fall_anim" ,true)
@@ -41,33 +37,18 @@ local crouch_sneak = minetest.settings:get_bool("crouch_sneak" ,true)
 armor_hover.is_3d_armor = minetest.get_modpath("3d_armor")
 armor_hover.is_skinsdb  = minetest.get_modpath("skinsdb")
 
--------------------------------------
--- Adding new armor item for Capes
-
-if armor_hover.add_capes == true then
-	if minetest.global_exists("armor") and armor.elements then
-		table.insert(armor.elements, "capes")
-	end
-end
-
 ----------------------------
 -- Initiate files
 
 dofile(modpath .. "/i_functions.lua")
 
-if armor_hover.example_cape and
-   armor_hover.add_capes and
-   armor_hover.is_3d_armor then
-
-	dofile(modpath .. "/i_example_cape.lua")
-end
 -------------------------------------
 -- Get Player model to use
 
 local player_mod, texture = armor_hover.get_player_model()
 
 --------------------------------------
--- Player model with Swim/Fly/Capes
+-- Player model with Swim/Fly
 
 player_api.register_model(player_mod, {
 	animation_speed = 30,
