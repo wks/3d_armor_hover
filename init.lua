@@ -101,6 +101,16 @@ minetest.register_on_joinplayer(function(player)
 
 end)
 
+-- Hack: Force using our player_mod after skinsdb switches skin.
+local old_apply_skin_to_player = skins.skin_class.apply_skin_to_player
+
+function skins.skin_class:apply_skin_to_player(player)
+	print("Letting skinsdb apply skin...")
+	old_apply_skin_to_player(self, player)
+	print("Force re-registering player mod:", player_mod)
+	player_api.set_model(player, player_mod)
+end
+
 ------------------------------------------------
 --    Global step to check if player meets    --
 -- Conditions for Swimming, Flying(falling)   --

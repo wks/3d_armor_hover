@@ -13,42 +13,11 @@
 -- Get Player model and textures
 
 function armor_hover.get_player_model()
-
-	-- player_api only  (simple_skins uses)
-	local player_mod = "character_sf.b3d"
-	local texture = {"character.png",
-	                 "3d_armor_trans.png"}
-
-	-- 3d_armor only nil capes (simple_skins uses)
-	if armor_hover.is_3d_armor and
-	   not armor_hover.add_capes and
-	   not armor_hover.is_skinsdb  then
-
-		player_mod = "3d_armor_character_sf.b3d"
-		texture = {armor.default_skin..".png",
-			       "3d_armor_trans.png",
-				   "3d_armor_trans.png"}
-	end
-
-	-- 3d_armor only with capes (simple_skins uses)
-	if armor_hover.is_3d_armor and
-	   armor_hover.add_capes and
-	   not armor_hover.is_skinsdb then
-
-		player_mod = "3d_armor_character_sfc.b3d"
-		texture = {armor.default_skin..".png",
-		           "3d_armor_trans.png",
-				   "3d_armor_trans.png"}
-	end
-
-	-- skins_db with 3d_armor or without (clothes_2 uses)
-	if armor_hover.is_skinsdb then
-		player_mod = "skinsdb_3d_armor_character_5.b3d"
-		texture = {"blank.png",
+	local player_mod = "skinsdb_3d_armor_character_5_hover.glb"
+	local texture = {"blank.png",
 		           "blank.png",
 				   "blank.png",
 				   "blank.png"}
-	end
 
 	return player_mod,texture
 end
