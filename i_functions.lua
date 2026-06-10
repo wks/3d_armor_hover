@@ -12,7 +12,7 @@
 ----------------------------------------
 -- Get Player model and textures
 
-function armor_fly_swim.get_player_model()
+function armor_hover.get_player_model()
 
 	-- player_api only  (simple_skins uses)
 	local player_mod = "character_sf.b3d"
@@ -20,9 +20,9 @@ function armor_fly_swim.get_player_model()
 	                 "3d_armor_trans.png"}
 
 	-- 3d_armor only nil capes (simple_skins uses)
-	if armor_fly_swim.is_3d_armor and
-	   not armor_fly_swim.add_capes and
-	   not armor_fly_swim.is_skinsdb  then
+	if armor_hover.is_3d_armor and
+	   not armor_hover.add_capes and
+	   not armor_hover.is_skinsdb  then
 
 		player_mod = "3d_armor_character_sf.b3d"
 		texture = {armor.default_skin..".png",
@@ -31,9 +31,9 @@ function armor_fly_swim.get_player_model()
 	end
 
 	-- 3d_armor only with capes (simple_skins uses)
-	if armor_fly_swim.is_3d_armor and
-	   armor_fly_swim.add_capes and
-	   not armor_fly_swim.is_skinsdb then
+	if armor_hover.is_3d_armor and
+	   armor_hover.add_capes and
+	   not armor_hover.is_skinsdb then
 
 		player_mod = "3d_armor_character_sfc.b3d"
 		texture = {armor.default_skin..".png",
@@ -42,7 +42,7 @@ function armor_fly_swim.get_player_model()
 	end
 
 	-- skins_db with 3d_armor or without (clothes_2 uses)
-	if armor_fly_swim.is_skinsdb then
+	if armor_hover.is_skinsdb then
 		player_mod = "skinsdb_3d_armor_character_5.b3d"
 		texture = {"blank.png",
 		           "blank.png",
@@ -56,7 +56,7 @@ end
 ----------------------------------------
 -- Get WASD, pressed = true
 
-function armor_fly_swim.get_wasd_state(controls)
+function armor_hover.get_wasd_state(controls)
 
 	local rtn = false
 
@@ -74,7 +74,7 @@ end
 ----------------------------------------
 -- Node above solid
 
-function armor_fly_swim.node_above_solid(pos)
+function armor_hover.node_above_solid(pos)
 
 	local node_check = minetest.get_node({x=pos.x,y=pos.y+1,z=pos.z})
 	local rtn = false 
@@ -97,7 +97,7 @@ end
 -----------------------------------------------
 -- Get X number nodes down drawtype and return
 -- Thanks Gundul
-function armor_fly_swim.get_node_down_drawtype(pos,num)
+function armor_hover.get_node_down_drawtype(pos,num)
 
 local i = 0
 local nodes = {}
@@ -126,7 +126,7 @@ end
 -----------------------------------------------
 --  Check X number nodes down fly/swimmable
 
-function armor_fly_swim.node_down_check(nodes,num,type)
+function armor_hover.node_down_check(nodes,num,type)
 
 local draw_ta = {"airlike"}
 local draw_tl = {"liquid","flowingliquid"}

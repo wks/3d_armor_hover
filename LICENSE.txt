@@ -1,5 +1,5 @@
-[mod] 3d_armor_flyswim
-=======================
+[mod] 3d_armor_hover
+====================
 Licence code LGPL v2.1
 "Headanim" code by LoneWolfHT MIT Licence                        
 Cape Textures - CC0                          

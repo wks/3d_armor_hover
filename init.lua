@@ -16,13 +16,13 @@
 ----------------------------
 -- Settings
 
-armor_fly_swim = {}
+armor_hover = {}
 
 local modname = minetest.get_current_modname()
 local modpath = minetest.get_modpath(modname)
 
-armor_fly_swim.add_capes = minetest.settings:get_bool("capes_add_to_3darmor" ,false)
-armor_fly_swim.example_cape = minetest.settings:get_bool("example_cape" ,false)
+armor_hover.add_capes = minetest.settings:get_bool("capes_add_to_3darmor" ,false)
+armor_hover.example_cape = minetest.settings:get_bool("example_cape" ,false)
 
 local fly_anim = minetest.settings:get_bool("fly_anim" ,true)
 local fall_anim = minetest.settings:get_bool("fall_anim" ,true)
@@ -38,13 +38,13 @@ local crouch_sneak = minetest.settings:get_bool("crouch_sneak" ,true)
 -----------------------
 -- Conditional mods
 
-armor_fly_swim.is_3d_armor = minetest.get_modpath("3d_armor")
-armor_fly_swim.is_skinsdb  = minetest.get_modpath("skinsdb")
+armor_hover.is_3d_armor = minetest.get_modpath("3d_armor")
+armor_hover.is_skinsdb  = minetest.get_modpath("skinsdb")
 
 -------------------------------------
 -- Adding new armor item for Capes
 
-if armor_fly_swim.add_capes == true then
+if armor_hover.add_capes == true then
 	if minetest.global_exists("armor") and armor.elements then
 		table.insert(armor.elements, "capes")
 	end
@@ -55,16 +55,16 @@ end
 
 dofile(modpath .. "/i_functions.lua")
 
-if armor_fly_swim.example_cape and
-   armor_fly_swim.add_capes and
-   armor_fly_swim.is_3d_armor then
+if armor_hover.example_cape and
+   armor_hover.add_capes and
+   armor_hover.is_3d_armor then
 
 	dofile(modpath .. "/i_example_cape.lua")
 end
 -------------------------------------
 -- Get Player model to use
 
-local player_mod, texture = armor_fly_swim.get_player_model()
+local player_mod, texture = armor_hover.get_player_model()
 
 --------------------------------------
 -- Player model with Swim/Fly/Capes
@@ -117,9 +117,9 @@ minetest.register_globalstep(function()
 		local ani_spd       = 30
 		local offset        = 0
 		local controls      = player:get_player_control()
-		local controls_wasd = armor_fly_swim.get_wasd_state(controls)
+		local controls_wasd = armor_hover.get_wasd_state(controls)
 		local cur_anim      = player:get_animation()
-		local is_node_a_solid = armor_fly_swim.node_above_solid(pos)
+		local is_node_a_solid = armor_hover.node_above_solid(pos)
 		local tdebug          = false
 		local animation       = ""
 		local play_s          = 0
@@ -200,9 +200,9 @@ minetest.register_globalstep(function()
 				  ladder.n_b    = {is = false, pos = {x=pos.x,y=pos.y -1,z=pos.z}}
 			local is_slab       = crouch_wa(player,pos)
 
-			local nodes_down    = armor_fly_swim.get_node_down_drawtype(pos,5)
+			local nodes_down    = armor_hover.get_node_down_drawtype(pos,5)
 
-			local check_fsable  = armor_fly_swim.node_down_check
+			local check_fsable  = armor_hover.node_down_check
 			local attack        = ""
 
 			-- reset player collisionbox, eye height, speed override
