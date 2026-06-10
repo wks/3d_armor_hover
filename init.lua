@@ -54,7 +54,8 @@ player_api.register_model(player_mod, {
 	animation_speed = 30,
 	textures = texture,
 	animations = {
-		stand =     {x=0,   y=79},
+--		stand =     {x=0,   y=79},
+		stand =     {x=450, y=599},
 		lay =       {x=162, y=166},
 		walk =      {x=168, y=187},
 		mine =      {x=189, y=198},
@@ -69,6 +70,7 @@ player_api.register_model(player_mod, {
 		duck_std =  {x=380, y=380},
 		duck =      {x=381, y=399},
 		climb =     {x=410, y=429},
+		hover_stand = 	{x=450, y=599},
 	},
 })
 ----------------------------------------
