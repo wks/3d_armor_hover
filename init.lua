@@ -54,8 +54,7 @@ player_api.register_model(player_mod, {
     animation_speed = 30,
     textures = texture,
     animations = {
-        -- stand               = { x = 0,      y = 79  },
-        stand               = { x = 450,    y = 599 },
+        stand               = { x = 0,      y = 79  },
         lay                 = { x = 162,    y = 166 },
         walk                = { x = 168,    y = 187 },
         mine                = { x = 189,    y = 198 },
@@ -118,9 +117,7 @@ function armor_hover.global_step()
         local vel             = player:get_velocity()
 
         -- basically 3D Pythagorean Theorem km/h
-        play_s                = (math.sqrt(math.pow(math.abs(vel.x), 2) +
-            math.pow(math.abs(vel.y), 2) +
-            math.pow(math.abs(vel.z), 2))) * 3.6
+        play_s                = (math.sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z)) * 3.6
 
 
         -- Sets terminal velocity to about 150Km/hr beyond
