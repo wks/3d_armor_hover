@@ -13,20 +13,18 @@
 ---------------------------
 This is a small utility mod which adds some new animations to the default animations found in player_api animations, the new animations are:
 
-	|Animation| Start | End | FPS |
-	|---------|-------|-----|-----|
-	|Swim     |  246  | 279 |  30 |
-	|Swim Atk |  285  | 318 |  30 |
-	|Fly      |  325  | 334 |  30 |
-	|Fly Atk  |  340  | 349 |  30 |
-	|Fall     |  355  | 364 |  30 |
-	|Fall Atk |  365  | 374 |  30 |
-	|Duck Std |  380  | 380 |  30 |
-	|Duck     |  381  | 399 |  30 |
-	|Climb    |  410  | 429 |  30 |
-	
- 	
-		
+|Animation| Start | End | FPS |
+|---------|-------|-----|-----|
+|Swim     |  246  | 279 |  30 |
+|Swim Atk |  285  | 318 |  30 |
+|Fly      |  325  | 334 |  30 |
+|Fly Atk  |  340  | 349 |  30 |
+|Fall     |  355  | 364 |  30 |
+|Fall Atk |  365  | 374 |  30 |
+|Duck Std |  380  | 380 |  30 |
+|Duck     |  381  | 399 |  30 |
+|Climb    |  410  | 429 |  30 |
+
 I have done my best to trigger the animations in the correct circumstances when viewing the player model in 3rd person. 
 
 I have only tested this against minetest versions 5.0 to 5.6
