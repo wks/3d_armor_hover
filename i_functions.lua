@@ -39,6 +39,19 @@ function armor_hover.get_wasd_state(controls)
 end
 
 ----------------------------------------
+-- Get LMB and RMB, pressed = true
+
+function armor_hover.get_lrmb_state(controls)
+    local rtn = false
+
+    if controls.LMB or controls.RMB then
+        rtn = true
+    end
+
+    return rtn
+end
+
+----------------------------------------
 -- Node above solid
 
 function armor_hover.node_above_solid(pos)
