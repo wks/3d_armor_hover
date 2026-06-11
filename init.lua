@@ -99,20 +99,15 @@ end
 ------------------------------------------------
 function armor_hover.global_step()
     for _, player in pairs(minetest.get_connected_players()) do
-        --local start      = minetest.get_us_time()
-        local pmeta           = player:get_meta()
-        local pos             = player:get_pos()
-        local stg_old_pos     = pmeta:get_string("flyswim_old_pos")
-        local old_anim        = pmeta:get_string("flyswim_old_anim")
-        local stg_pos         = minetest.pos_to_string(pos, 5)
-        local controls        = player:get_player_control()
-        local controls_wasd   = armor_hover.get_wasd_state(controls)
-        local controls_lrmb   = armor_hover.get_lrmb_state(controls)
-        local cur_anim        = player:get_animation()
-        local is_node_a_solid = armor_hover.node_above_solid(pos)
-        local tdebug          = false
-        local vel             = player:get_velocity()
-        local speed           = vector.length(vel)
+        local profile       = false
+        local start_time    = profile and minetest.get_us_time()
+
+        local pos           = player:get_pos()
+        local controls      = player:get_player_control()
+        local controls_wasd = armor_hover.get_wasd_state(controls)
+        local controls_lrmb = armor_hover.get_lrmb_state(controls)
+        local vel           = player:get_velocity()
+        local speed         = vector.length(vel)
 
         -- Sets terminal velocity to about 150Km/hr beyond
         -- this speed chunk load issues become more noticable
@@ -238,14 +233,10 @@ function armor_hover.global_step()
             })
         end
 
-
-        -----------------------------
-        -- Update player meta
-        pmeta:set_string("flyswim_old_anim", animation)
-        pmeta:set_string("flyswim_old_pos", minetest.pos_to_string(pos, 5))
-
-        --minetest.debug(play_s.." km/h")
-        --minetest.debug(dump(minetest.get_us_time()-start))
+        if profile then
+            local end_time = minetest.get_us_time()
+            minetest.debug(dump(end_time - start_time))
+        end
     end
 end
 
