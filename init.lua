@@ -209,7 +209,7 @@ function armor_hover.global_step()
                     not attached_to and
                     not check_fsable(nodes_down, 2, "a")
                 then
-                    return controls_wasd and "duck" or  "duck_std"
+                    return controls_wasd and "duck" or "duck_std"
                 end
 
                 -- Walking or standing, mining or not.
@@ -227,30 +227,15 @@ function armor_hover.global_step()
         player_api.set_animation(player, animation, ani_spd)
         player:set_local_animation({}, {}, {}, {}, 30)
 
-        local offset = 0
-        ---------------------------------------------------------
-        --              Post MT 5.3 Head Animation             --
-        ---------------------------------------------------------
-        -- this function was added in 5.3 which has the bone position
-        -- change break animations fix - i think (MT #9807)
-        -- I'm not too sure how to directly test for the bone fix/ MT version
-        -- so I simply check for this function.
-        local check_v = minetest.is_creative_enabled
+        -- Head Animation
+        -- We depend on the new `player:set_bone_override` method.
+        -- If not available (in older luanti versions), we skip this.
+        if player.set_bone_override then
+            local look_pitch = player:get_look_vertical()
 
-        if check_v ~= nil then
-            local look_degree = -math.deg(player:get_look_vertical())
-
-            if look_degree > 29 and offset ~= 0 then
-                offset = offset - (look_degree - 30)
-            elseif look_degree > 60 and offset == 0 then
-                offset = offset - (look_degree - 60)
-            elseif look_degree < -60 and offset == 0 then
-                offset = offset - (look_degree + 60)
-            end
-
-            -- Code by LoneWolfHT - Headanim mod MIT Licence --
-            player:set_bone_position("Head", vector.new(0, 6.35, 0), vector.new(look_degree + offset, 0, 0))
-            -- Code by LoneWolfHT - Headanim mod MIT Licence --
+            player:set_bone_override("Head", {
+                rotation = { vec = vector.new(look_pitch, 0, 0) }
+            })
         end
 
 
