@@ -216,11 +216,14 @@ function armor_hover.global_step()
             end
         end
 
-        local animation, ani_spd = determine_animation()
-        ani_std = ani_std or 30
+        -- Do not change animation if the player is attached (e.g. sleeping).
+        if not player_api.player_attached[player:get_player_name()] then
+            local animation, ani_spd = determine_animation()
+            ani_std = ani_std or 30
 
-        player_api.set_animation(player, animation, ani_spd)
-        player:set_local_animation({}, {}, {}, {}, 30)
+            player_api.set_animation(player, animation, ani_spd)
+            player:set_local_animation({}, {}, {}, {}, 30)
+        end
 
         -- Head Animation
         -- We depend on the new `player:set_bone_override` method.
