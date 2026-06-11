@@ -99,7 +99,7 @@ end
 -- Conditions for Swimming, Flying(falling)   --
 --          Crouching or Climbing             --
 ------------------------------------------------
-minetest.register_globalstep(function()
+function armor_hover.global_step()
 	for _, player in pairs(minetest.get_connected_players()) do
 		--local start      = minetest.get_us_time()
 		local pmeta      = player:get_meta()
@@ -461,4 +461,16 @@ minetest.register_globalstep(function()
 		--minetest.debug(dump(minetest.get_us_time()-start))
 
 	end
-end)
+end
+
+-- Hack: Override player_api.globalstep.
+-- player_api.globalstep will set animation.  If we register another global_step and change
+-- the animation to a different value, the game engine will perceive that the animation is
+-- constantly changing.  If that happens, the animation frame will be constantly reset to the
+-- starting frame, preventing the animation from playing.
+-- Instead, we disable player_api.globalstep and let it run our global_step.
+local player_api_global_step = player_api.globalstep
+
+player_api.globalstep = function()
+	armor_hover.global_step()
+end
