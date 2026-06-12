@@ -22,5 +22,6 @@ crouch_anim (Enable crouch/duck animation) bool true
 #    Enable Crouch/Duck - through through 1.5 hole
 crouch_sneak (Enable crouch/duck animation) bool true
 
-
+#    Select from several available models for standing in the air to use in game
+hover_stand_model (Hover stand model) enum 1 1,2
 

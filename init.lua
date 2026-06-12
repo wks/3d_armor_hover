@@ -30,6 +30,7 @@ local swim_sneak        = minetest.settings:get_bool("swim_sneak", true)
 local climb_anim        = minetest.settings:get_bool("climb_anim", true)
 local crouch_anim       = minetest.settings:get_bool("crouch_anim", true)
 local crouch_sneak      = minetest.settings:get_bool("crouch_sneak", true)
+local hover_stand_model = minetest.settings:get("hover_stand_model") or "1"
 
 -----------------------
 -- Conditional mods
@@ -54,22 +55,27 @@ player_api.register_model(player_mod, {
     animation_speed = 30,
     textures = texture,
     animations = {
-        stand       = { x = 0, y = 79 },
-        lay         = { x = 162, y = 166 },
-        walk        = { x = 168, y = 187 },
-        mine        = { x = 189, y = 198 },
-        walk_mine   = { x = 200, y = 219 },
-        sit         = { x = 81, y = 160 },
-        swim        = { x = 246, y = 279 },
-        swim_atk    = { x = 285, y = 318 },
-        fly         = { x = 325, y = 334 },
-        fly_atk     = { x = 340, y = 349 },
-        fall        = { x = 355, y = 364 },
-        fall_atk    = { x = 365, y = 374 },
-        duck_std    = { x = 380, y = 380 },
-        duck        = { x = 381, y = 399 },
-        climb       = { x = 410, y = 429 },
-        hover_stand = { x = 450, y = 599 },
+        stand         = { x = 0, y = 79 },
+        lay           = { x = 162, y = 166 },
+        walk          = { x = 168, y = 187 },
+        mine          = { x = 189, y = 198 },
+        walk_mine     = { x = 200, y = 219 },
+        sit           = { x = 81, y = 160 },
+        swim          = { x = 246, y = 279 },
+        swim_atk      = { x = 285, y = 318 },
+        fly           = { x = 325, y = 334 },
+        fly_atk       = { x = 340, y = 349 },
+        fall          = { x = 355, y = 364 },
+        fall_atk      = { x = 365, y = 374 },
+        duck_std      = { x = 380, y = 380 },
+        duck          = { x = 381, y = 399 },
+        climb         = { x = 410, y = 429 },
+        hover_stand1  = { x = 450, y = 599 },
+        hover_mine1   = { x = 610, y = 759 },
+        hover_stand2  = { x = 770, y = 919 },
+        hover_mine2   = { x = 930, y = 1079 },
+        slow_fly      = { x = 1110, y = 1199 },
+        slow_fly_mine = { x = 1210, y = 1299 },
     },
 })
 ----------------------------------------
@@ -109,6 +115,7 @@ function armor_hover.global_step()
         local controls_lrmb = armor_hover.get_lrmb_state(controls)
         local vel           = player:get_velocity()
         local speed         = vector.length(vel)
+        local stand_alt     = hover_stand_model
 
         -- The player has a `get_attach()` method,
         -- but `player_api` also has a `player_attached` table that "conceptually" attaches the player.
@@ -189,7 +196,12 @@ function armor_hover.global_step()
                 end
 
                 -- TODO: Add more flying animations
-                return "hover_stand"
+
+                if controls_wasd then
+                    return controls_lrmb and "slow_fly_mine" or "slow_fly"
+                else
+                    return (controls_lrmb and "hover_mine" or "hover_stand") .. stand_alt
+                end
             else
                 -- Fall
                 if fall_anim and
