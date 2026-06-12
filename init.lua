@@ -102,12 +102,18 @@ function armor_hover.global_step()
         local profile       = false
         local start_time    = profile and minetest.get_us_time()
 
+        local player_name   = player:get_player_name()
         local pos           = player:get_pos()
         local controls      = player:get_player_control()
         local controls_wasd = armor_hover.get_wasd_state(controls)
         local controls_lrmb = armor_hover.get_lrmb_state(controls)
         local vel           = player:get_velocity()
         local speed         = vector.length(vel)
+
+        -- The player has a `get_attach()` method,
+        -- but `player_api` also has a `player_attached` table that "conceptually" attaches the player.
+        -- They work independently.  Although mods often set both, but not always.
+        local attached_to   = player:get_attach() or player_api.player_attached[player_name]
 
         -- Sets terminal velocity to about 150Km/hr beyond
         -- this speed chunk load issues become more noticable
@@ -126,7 +132,6 @@ function armor_hover.global_step()
                 return "lay"
             end
 
-            local attached_to  = player:get_attach()
             local privs        = minetest.get_player_privs(player:get_player_name())
             local nodes_down   = armor_hover.get_node_down_drawtype(pos, 5)
             local check_fsable = armor_hover.node_down_check
@@ -135,15 +140,13 @@ function armor_hover.global_step()
             -- Swim: top priority.
             if swim_anim and
                 controls_wasd and
-                check_fsable(nodes_down, 2, "s") and
-                not attached_to
+                check_fsable(nodes_down, 2, "s")
             then
                 return "swim" .. attack
             end
 
             -- Climb
-            if climb_anim and
-                not attached_to then
+            if climb_anim then
                 local function is_climbable(dy)
                     local node = minetest.get_node({ x = pos.x, y = pos.y + dy, z = pos.z })
                     local node_def = minetest.registered_nodes[node.name];
@@ -172,7 +175,6 @@ function armor_hover.global_step()
                 if fall_anim and
                     not controls_wasd and
                     vel.y < -18.0 and
-                    not attached_to and
                     check_fsable(nodes_down, 5, "a")
                 then
                     return "fall"
@@ -192,7 +194,6 @@ function armor_hover.global_step()
                 -- Fall
                 if fall_anim and
                     vel.y < -0.5 and
-                    not attached_to and
                     check_fsable(nodes_down, 5, "a")
                 then
                     return "fall"
@@ -201,7 +202,6 @@ function armor_hover.global_step()
                 -- Sneak
                 if crouch_anim and
                     controls.sneak and
-                    not attached_to and
                     not check_fsable(nodes_down, 2, "a")
                 then
                     return controls_wasd and "duck" or "duck_std"
@@ -216,8 +216,8 @@ function armor_hover.global_step()
             end
         end
 
-        -- Do not change animation if the player is attached (e.g. sleeping).
-        if not player_api.player_attached[player:get_player_name()] then
+        -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
+        if not attached_to then
             local animation, ani_spd = determine_animation()
             ani_std = ani_std or 30
 
