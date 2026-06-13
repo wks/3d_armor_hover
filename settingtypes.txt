@@ -22,6 +22,11 @@ crouch_anim (Enable crouch/duck animation) bool true
 #    Enable Crouch/Duck - through through 1.5 hole
 crouch_sneak (Enable crouch/duck animation) bool true
 
-#    Select from several available models for standing in the air to use in game
-hover_stand_model (Hover stand model) enum 1 1,2
+#    Select the animation for standing in the air
+hover_anim (Hover animation) enum hover1 hover1,hover2,fly_slow
 
+#    Select the slow flying animation
+slow_fly_anim (Hover stand model) enum fly_slow fly_slow,fly_fast
+
+#    When true, the "climb" animation will still be played when flying near climbables.  When false, the animation selection algorithm completely ignore climbables when flying.
+climb_when_fly (Allow climbing when flying) bool false

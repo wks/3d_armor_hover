@@ -30,7 +30,9 @@ local swim_sneak        = minetest.settings:get_bool("swim_sneak", true)
 local climb_anim        = minetest.settings:get_bool("climb_anim", true)
 local crouch_anim       = minetest.settings:get_bool("crouch_anim", true)
 local crouch_sneak      = minetest.settings:get_bool("crouch_sneak", true)
-local hover_stand_model = minetest.settings:get("hover_stand_model") or "1"
+local hover_anim        = minetest.settings:get("hover_anim") or "hover1"
+local slow_fly_anim     = minetest.settings:get("slow_fly_anim") or "fly_slow"
+local climb_when_fly    = minetest.settings:get_bool("climb_when_fly", false)
 
 -----------------------
 -- Conditional mods
@@ -62,30 +64,36 @@ player_api.register_model(player_mod, {
         walk_mine     = { x = 200, y = 219 },
         sit           = { x = 81, y = 160 },
         swim          = { x = 246, y = 279 },
-        swim_atk      = { x = 285, y = 318 },
-        fly           = { x = 325, y = 334 },
-        fly_atk       = { x = 340, y = 349 },
+        swim_mine     = { x = 285, y = 318 },
+        fly_fast      = { x = 325, y = 334 },
+        fly_fast_mine = { x = 340, y = 349 },
         fall          = { x = 355, y = 364 },
-        fall_atk      = { x = 365, y = 374 },
-        duck_std      = { x = 380, y = 380 },
-        duck          = { x = 381, y = 399 },
+        fall_mine     = { x = 365, y = 374 },
+        duck          = { x = 380, y = 380 },
+        duck_move     = { x = 381, y = 399 },
         climb         = { x = 410, y = 429 },
-        hover_stand1  = { x = 450, y = 599 },
-        hover_mine1   = { x = 610, y = 759 },
-        hover_stand2  = { x = 770, y = 919 },
-        hover_mine2   = { x = 930, y = 1079 },
-        slow_fly      = { x = 1110, y = 1199 },
-        slow_fly_mine = { x = 1210, y = 1299 },
+        climb_still   = { x = 410, y = 410 }, -- on climbable but not moving
+        hover1        = { x = 450, y = 599 },
+        hover1_mine   = { x = 610, y = 759 },
+        hover2        = { x = 770, y = 919 },
+        hover2_mine   = { x = 930, y = 1079 },
+        fly_slow      = { x = 1110, y = 1199 },
+        fly_slow_mine = { x = 1210, y = 1299 },
     },
 })
 ----------------------------------------
 -- Setting model on join and clearing
 -- local_animations
 
+local function clear_local_animation(player)
+    local none = { x = 0, y = 0 }
+    player:set_local_animation(none, none, none, none, 30)
+end
+
 minetest.register_on_joinplayer(function(player)
     player_api.set_model(player, player_mod)
     player_api.player_attached[player:get_player_name()] = false
-    player:set_local_animation({}, {}, {}, {}, 30)
+    clear_local_animation(player)
 end)
 
 -- Hack: Force using our player_mod after skinsdb switches skin.
@@ -115,7 +123,12 @@ function armor_hover.global_step()
         local controls_lrmb = armor_hover.get_lrmb_state(controls)
         local vel           = player:get_velocity()
         local speed         = vector.length(vel)
-        local stand_alt     = hover_stand_model
+
+        local privs         = minetest.get_player_privs(player:get_player_name())
+
+        -- Is there a way to detect if the player has enabled fly (freemove) mode
+        -- instead of checking the "fly" privilege?
+        local fly           = privs.fly
 
         -- The player has a `get_attach()` method,
         -- but `player_api` also has a `player_attached` table that "conceptually" attaches the player.
@@ -139,42 +152,69 @@ function armor_hover.global_step()
                 return "lay"
             end
 
-            local privs        = minetest.get_player_privs(player:get_player_name())
             local nodes_down   = armor_hover.get_node_down_drawtype(pos, 5)
             local check_fsable = armor_hover.node_down_check
-            local attack       = controls_lrmb and "_atk" or ""
+            local mine_suffix  = controls_lrmb and "_mine" or ""
 
             -- Swim: top priority.
             if swim_anim and
-                controls_wasd and
-                check_fsable(nodes_down, 2, "s")
+                controls_wasd
             then
-                return "swim" .. attack
+                -- See LocalPlayer::move in the Luanti source code `src/client/localplayer.cpp`
+                local function is_in_liquid(dy)
+                    local node = minetest.get_node_or_nil({ x = pos.x, y = pos.y + dy, z = pos.z })
+                    if not node then
+                        return false
+                    end
+                    local node_def = minetest.registered_nodes[node.name];
+                    if not node_def then
+                        return false
+                    end
+                    local liquid_move_physics = node_def.liquid_move_physics
+                    if liquid_move_physics == nil then
+                        return node_def.liquidtype ~= "none"
+                    else
+                        return liquid_move_physics
+                    end
+                end
+
+                if is_in_liquid(0.1) or is_in_liquid(0.5) then
+                    return "swim" .. mine_suffix
+                end
             end
 
             -- Climb
-            if climb_anim then
+            if climb_anim and
+                (not fly or climb_when_fly)
+            then
+                -- See LocalPlayer::move in the Luanti source code `src/client/localplayer.cpp`
                 local function is_climbable(dy)
-                    local node = minetest.get_node({ x = pos.x, y = pos.y + dy, z = pos.z })
+                    local node = minetest.get_node_or_nil({ x = pos.x, y = pos.y + dy, z = pos.z })
+                    if not node then
+                        return false
+                    end
                     local node_def = minetest.registered_nodes[node.name];
                     return node_def and node_def.climbable
                 end
 
-                -- Note that the player may hold both the jump and the sneak keys at the same time.
-                if controls.jump and not controls.sneak then
-                    if is_climbable(0) or is_climbable(1) then
+                local is_climbing = is_climbable(0.5) or is_climbable(-0.2)
+
+                if is_climbing then
+                    if controls.jump and not controls.sneak or
+                        controls.sneak and not controls.jump
+                    then
                         return "climb"
-                    end
-                end
-                if controls.sneak and not controls.jump then
-                    if is_climbable(0) or is_climbable(-1) then
-                        return "climb"
+                    else
+                        -- Note that the player may hold both the jump and the sneak keys at the same time.
+                        -- In that case, the player will not move.
+                        -- But if the player is still near a climbable, we play a non-moving climbing animation.
+                        return "climb_still"
                     end
                 end
             end
 
             if fly_anim and
-                privs.fly
+                fly
             then
                 -- Fall.
                 -- Consider it falling only when flying straight down.
@@ -184,7 +224,7 @@ function armor_hover.global_step()
                     vel.y < -18.0 and
                     check_fsable(nodes_down, 5, "a")
                 then
-                    return "fall"
+                    return "fall" .. mine_suffix
                 end
 
                 -- Use the "Superman fly" animation only when flying fast enough.
@@ -192,15 +232,15 @@ function armor_hover.global_step()
                 if speed > 18.0 and
                     controls_wasd
                 then
-                    return "fly" .. attack
+                    return "fly_fast" .. mine_suffix
                 end
 
                 -- TODO: Add more flying animations
 
                 if controls_wasd then
-                    return controls_lrmb and "slow_fly_mine" or "slow_fly"
+                    return slow_fly_anim .. mine_suffix
                 else
-                    return (controls_lrmb and "hover_mine" or "hover_stand") .. stand_alt
+                    return hover_anim .. mine_suffix
                 end
             else
                 -- Fall
@@ -208,20 +248,20 @@ function armor_hover.global_step()
                     vel.y < -0.5 and
                     check_fsable(nodes_down, 5, "a")
                 then
-                    return "fall"
+                    return "fall" .. mine_suffix
                 end
 
                 -- Sneak
                 if crouch_anim and
                     controls.sneak and
-                    not check_fsable(nodes_down, 2, "a")
+                    not controls_lrmb -- TODO: Should there be a "sneak_mine" animation?
                 then
-                    return controls_wasd and "duck" or "duck_std"
+                    return controls_wasd and "duck_move" or "duck"
                 end
 
                 -- Walking or standing, mining or not.
                 if controls_wasd then
-                    return controls_lrmb and "walk_mine" or "walk"
+                    return "walk" .. mine_suffix
                 else
                     return controls_lrmb and "mine" or "stand"
                 end
@@ -231,10 +271,10 @@ function armor_hover.global_step()
         -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
         if not attached_to then
             local animation, ani_spd = determine_animation()
-            ani_std = ani_std or 30
+            ani_spd = ani_spd or 30
 
             player_api.set_animation(player, animation, ani_spd)
-            player:set_local_animation({}, {}, {}, {}, 30)
+            clear_local_animation(player)
         end
 
         -- Head Animation
