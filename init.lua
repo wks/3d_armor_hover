@@ -33,6 +33,7 @@ local crouch_sneak      = minetest.settings:get_bool("crouch_sneak", true)
 local hover_anim        = minetest.settings:get("hover_anim") or "hover1"
 local slow_fly_anim     = minetest.settings:get("slow_fly_anim") or "fly_slow"
 local climb_when_fly    = minetest.settings:get_bool("climb_when_fly", false)
+local when_stop_fly     = minetest.settings:get("when_stop_fly") or "keep"
 
 -----------------------
 -- Conditional mods
@@ -57,7 +58,7 @@ local player_mod, texture = armor_hover.get_player_model()
 -- The model file contains two whole periods of the animation.
 -- The phase (0.0-1.0) can select which phase to start the animation with.
 local function peri_xy(start, length, phase)
-    local x = math.floor (start + length * phase)
+    local x = math.floor(start + length * phase)
     local y = x + length - 1
     if y < x then
         y = x
@@ -130,6 +131,7 @@ function armor_hover.global_step()
         local start_time    = profile and minetest.get_us_time()
 
         local player_name   = player:get_player_name()
+        local player_meta   = player:get_meta()
         local pos           = player:get_pos()
         local controls      = player:get_player_control()
         local controls_wasd = armor_hover.get_wasd_state(controls)
@@ -159,7 +161,7 @@ function armor_hover.global_step()
         end
 
         -- Determine the animation.
-        local function determine_animation()
+        local function determine_animation(base_animation)
             -- Death check.  Remember that we have replaced `player_api.globalstep`.
             if player:get_hp() == 0 then
                 return "lay"
@@ -251,8 +253,30 @@ function armor_hover.global_step()
                 -- TODO: Add more flying animations
 
                 if controls_wasd then
+                    -- If the player holds both left and right or both forward and backward,
+                    -- the player will not move, but will switch to slow_fly_anim.
+                    -- This is intentional.
+                    base_animation.new = "slow_fly"
                     return slow_fly_anim .. mine_suffix
+                end
+
+                if controls.jump or controls.sneak then
+                    -- If the player holds both jump and sneak,
+                    -- the player will not move, but will switch to hover_anim.
+                    -- This is intentional.
+                    base_animation.new = "hover"
+                    return hover_anim .. mine_suffix
+                end
+
+                if when_stop_fly == "keep" then
+                    base_animation.new = base_animation.old
+                    if base_animation.old == "slow_fly" then
+                        return slow_fly_anim .. mine_suffix
+                    else
+                        return hover_anim .. mine_suffix
+                    end
                 else
+                    base_animation.new = "hover"
                     return hover_anim .. mine_suffix
                 end
             else
@@ -281,14 +305,23 @@ function armor_hover.global_step()
             end
         end
 
+        local base_animation = {
+            old = player_meta:get_string("3d_armor_hover:base_animation"),
+            new = "",
+        }
+
         -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
         if not attached_to then
-            local animation, ani_spd = determine_animation()
+            local animation, ani_spd = determine_animation(base_animation)
             ani_spd = ani_spd or 30
 
             player_api.set_animation(player, animation, ani_spd)
             clear_local_animation(player)
         end
+
+        -- Regardless whether the player is attached, we update the cached base animation.
+        player_meta:set_string("3d_armor_hover:base_animation", base_animation.new)
+
 
         -- Head Animation
         -- We depend on the new `player:set_bone_override` method.
