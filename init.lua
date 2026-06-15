@@ -57,43 +57,49 @@ local player_mod, texture = armor_hover.get_player_model()
 -- Determine the interval of a periodic animation.
 -- The model file contains two whole periods of the animation.
 -- The phase (0.0-1.0) can select which phase to start the animation with.
-local function peri_xy(start, length, phase)
+local function peri_xy(start, length, phase, orig_table)
+    local result = orig_table or {}
     local x = math.floor(start + length * phase)
     local y = x + length - 1
     if y < x then
         y = x
     end
 
-    return { x = x, y = y }
+    result.x = x;
+    result.y = y;
+
+    return result;
 end
+
+local animations = {
+    stand         = { x = 0, y = 79 },
+    lay           = { x = 162, y = 166 },
+    walk          = { x = 168, y = 187 },
+    mine          = { x = 189, y = 198 },
+    walk_mine     = { x = 200, y = 219 },
+    sit           = { x = 81, y = 160 },
+    swim          = { x = 246, y = 279 },
+    swim_mine     = { x = 285, y = 318 },
+    fly_fast      = { x = 325, y = 334 },
+    fly_fast_mine = { x = 340, y = 349 },
+    fall          = { x = 355, y = 364 },
+    fall_mine     = { x = 365, y = 374 },
+    duck          = { x = 380, y = 380 },
+    duck_move     = { x = 381, y = 399 },
+    climb         = { x = 410, y = 429 },
+    climb_still   = { x = 410, y = 410 }, -- on climbable but not moving
+    hover1        = peri_xy(600, 90, 0.0),
+    hover1_mine   = peri_xy(800, 90, 0.0),
+    hover2        = peri_xy(1000, 90, 0.0),
+    hover2_mine   = peri_xy(1200, 90, 0.0),
+    fly_slow      = peri_xy(1400, 90, 0.0, { head_pitch = 0.45 * math.pi / 2 }), -- See model file.
+    fly_slow_mine = peri_xy(1600, 90, 0.0, { head_pitch = 0.45 * math.pi / 2 }),
+}
 
 player_api.register_model(player_mod, {
     animation_speed = 30,
     textures = texture,
-    animations = {
-        stand         = { x = 0, y = 79 },
-        lay           = { x = 162, y = 166 },
-        walk          = { x = 168, y = 187 },
-        mine          = { x = 189, y = 198 },
-        walk_mine     = { x = 200, y = 219 },
-        sit           = { x = 81, y = 160 },
-        swim          = { x = 246, y = 279 },
-        swim_mine     = { x = 285, y = 318 },
-        fly_fast      = { x = 325, y = 334 },
-        fly_fast_mine = { x = 340, y = 349 },
-        fall          = { x = 355, y = 364 },
-        fall_mine     = { x = 365, y = 374 },
-        duck          = { x = 380, y = 380 },
-        duck_move     = { x = 381, y = 399 },
-        climb         = { x = 410, y = 429 },
-        climb_still   = { x = 410, y = 410 }, -- on climbable but not moving
-        hover1        = peri_xy(600, 90, 0.0),
-        hover1_mine   = peri_xy(800, 90, 0.0),
-        hover2        = peri_xy(1000, 90, 0.0),
-        hover2_mine   = peri_xy(1200, 90, 0.0),
-        fly_slow      = peri_xy(1400, 90, 0.0),
-        fly_slow_mine = peri_xy(1600, 90, 0.0),
-    },
+    animations = animations,
 })
 ----------------------------------------
 -- Setting model on join and clearing
@@ -310,13 +316,18 @@ function armor_hover.global_step()
             new = "",
         }
 
+        local animation;
+
         -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
         if not attached_to then
-            local animation, ani_spd = determine_animation(base_animation)
+            local ani_spd;
+            animation, ani_spd = determine_animation(base_animation)
             ani_spd = ani_spd or 30
 
             player_api.set_animation(player, animation, ani_spd)
             clear_local_animation(player)
+        else
+            animation = player_api.get_animation(player).animation
         end
 
         -- Regardless whether the player is attached, we update the cached base animation.
@@ -328,6 +339,10 @@ function armor_hover.global_step()
         -- If not available (in older luanti versions), we skip this.
         if player.set_bone_override then
             local look_pitch = player:get_look_vertical()
+
+            if animation and animations[animation] and animations[animation].head_pitch then
+                look_pitch = look_pitch - animations[animation].head_pitch
+            end
 
             player:set_bone_override("Head", {
                 rotation = { vec = vector.new(look_pitch, 0, 0) }
