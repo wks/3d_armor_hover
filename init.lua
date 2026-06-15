@@ -53,6 +53,19 @@ local player_mod, texture = armor_hover.get_player_model()
 --------------------------------------
 -- Player model with Swim/Fly
 
+-- Determine the interval of a periodic animation.
+-- The model file contains two whole periods of the animation.
+-- The phase (0.0-1.0) can select which phase to start the animation with.
+local function peri_xy(start, length, phase)
+    local x = math.floor (start + length * phase)
+    local y = x + length - 1
+    if y < x then
+        y = x
+    end
+
+    return { x = x, y = y }
+end
+
 player_api.register_model(player_mod, {
     animation_speed = 30,
     textures = texture,
@@ -73,12 +86,12 @@ player_api.register_model(player_mod, {
         duck_move     = { x = 381, y = 399 },
         climb         = { x = 410, y = 429 },
         climb_still   = { x = 410, y = 410 }, -- on climbable but not moving
-        hover1        = { x = 450, y = 599 },
-        hover1_mine   = { x = 610, y = 759 },
-        hover2        = { x = 770, y = 919 },
-        hover2_mine   = { x = 930, y = 1079 },
-        fly_slow      = { x = 1110, y = 1199 },
-        fly_slow_mine = { x = 1210, y = 1299 },
+        hover1        = peri_xy(600, 90, 0.0),
+        hover1_mine   = peri_xy(800, 90, 0.0),
+        hover2        = peri_xy(1000, 90, 0.0),
+        hover2_mine   = peri_xy(1200, 90, 0.0),
+        fly_slow      = peri_xy(1400, 90, 0.0),
+        fly_slow_mine = peri_xy(1600, 90, 0.0),
     },
 })
 ----------------------------------------
