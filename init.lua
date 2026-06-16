@@ -41,6 +41,10 @@ local when_stop_fly     = minetest.settings:get("when_stop_fly") or "keep"
 armor_hover.is_3d_armor = minetest.get_modpath("3d_armor")
 armor_hover.is_skinsdb  = minetest.get_modpath("skinsdb")
 
+---------------------------------
+-- Volatile per-player storage
+local base_animations   = {}
+
 ----------------------------
 -- Initiate files
 
@@ -312,8 +316,7 @@ function armor_hover.global_step()
         end
 
         local base_animation = {
-            old = player_meta:get_string("3d_armor_hover:base_animation"),
-            new = "",
+            old = base_animations[player_name],
         }
 
         local animation;
@@ -331,8 +334,7 @@ function armor_hover.global_step()
         end
 
         -- Regardless whether the player is attached, we update the cached base animation.
-        player_meta:set_string("3d_armor_hover:base_animation", base_animation.new)
-
+        base_animations[player_name] = base_animation.new
 
         -- Head Animation
         -- We depend on the new `player:set_bone_override` method.
