@@ -24,6 +24,3 @@ crouch_sneak (Enable crouch/duck animation) bool true
 
 #    When true, the "climb" animation will still be played when flying near climbables.  When false, the animation selection algorithm completely ignore climbables when flying.
 climb_when_fly (Allow climbing when flying) bool false
-
-#    What animation to switch to when a player stops moving while flying?  If "keep", keep the old animation ("fly_slow" or "hover").  If "hover", switch to the "hover" animation.
-when_stop_fly (When stopping flying) enum keep keep,hover

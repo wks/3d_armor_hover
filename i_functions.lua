@@ -168,3 +168,32 @@ function crouch_wa(player, pos)
     -- return 1 or 0, need to update to bool
     return is_slab
 end
+
+-- Convert a linear list to a set
+function list_to_set(tab)
+    local result = {}
+    for _, v in ipairs(tab) do
+        result[v] = true
+    end
+
+    return result
+end
+
+-- Linearly search a list for a value.  Return the index.
+function list_find(tab, elem)
+    for i, v in ipairs(tab) do
+        if v == elem then
+            return i
+        end
+    end
+    return nil
+end
+
+-- Convert a table to a list of keys.
+function table_to_keys(tab)
+    local result = {}
+    for k, _ in pairs(tab) do
+        table.insert(result, k)
+    end
+    return result
+end

@@ -151,31 +151,43 @@ function armor_hover.get_config_formspec(player_name)
     b:add_format("label[%s;%s]", xy_wh(vlayout:add(style.title_height)),
         core.formspec_escape("3D Armor Hovering Animation Configuration"))
 
-    local options = armor_hover.configurable_animations
-    local options_string = table.concat(options, ",")
+    do
+        local options = armor_hover.configurable_animations
+        local options_string = table.concat(options, ",")
 
-    local function add_animation_selector(base_animation, title)
-        local chosen_animation = armor_hover.get_chosen_animation(player, base_animation)
-        local chosen_index = 1
-        for i, v in ipairs(options) do
-            if chosen_animation == v then
-                chosen_index = i
-                break
-            end
+        local function add_animation_selector(base_animation, title)
+            local chosen_animation = armor_hover.get_chosen_animation(player, base_animation)
+            local chosen_index = list_find(options, chosen_animation) or 1
+
+            local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
+            b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape(title))
+            b:add_format("dropdown[%s;selector_%s;%s;%d;false]",
+                xy_wh(c:get(1, 2)),
+                base_animation,
+                options_string,
+                chosen_index)
         end
 
-        local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
-        b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape(title))
-        b:add_format("dropdown[%s;selector_%s;%s;%d;false]",
-            xy_wh(c:get(1, 2)),
-            base_animation,
-            options_string,
-            chosen_index)
+        add_animation_selector("hovering", "Hovering")
+        add_animation_selector("slow_flying", "Slow flying")
+        add_animation_selector("fast_flying", "Fast flying")
     end
 
-    add_animation_selector("hovering", "Hovering")
-    add_animation_selector("slow_flying", "Slow flying")
-    add_animation_selector("fast_flying", "Fast flying")
+    do
+        local options = armor_hover.when_stop_fly_values
+        local options_string = table.concat(options, ",")
+
+        local cur_value = armor_hover.get_when_stop_fly(player)
+        local index = list_find(options, cur_value)
+
+        local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
+        b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape("When stop flying..."))
+        b:add_format("dropdown[%s;when_stop_fly;%s;%d;false]",
+            xy_wh(c:get(1, 2)),
+            options_string,
+            index)
+    end
+
 
     -- A bug (fixed in Git version) in Luanti is preventing the `model[]` from animating.
     -- We temporarily disable the preview until a stable version is released.

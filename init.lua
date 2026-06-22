@@ -31,7 +31,6 @@ local climb_anim        = minetest.settings:get_bool("climb_anim", true)
 local crouch_anim       = minetest.settings:get_bool("crouch_anim", true)
 local crouch_sneak      = minetest.settings:get_bool("crouch_sneak", true)
 local climb_when_fly    = minetest.settings:get_bool("climb_when_fly", false)
-local when_stop_fly     = minetest.settings:get("when_stop_fly") or "keep"
 
 -----------------------
 -- Conditional mods
@@ -126,12 +125,7 @@ armor_hover.default_animations = {
     slow_flying = "fly_slow",
     fast_flying = "fly_fast",
 }
-armor_hover.base_animations = {}
-do
-    for k, _ in pairs(armor_hover.default_animations) do
-        table.insert(armor_hover.base_animations, k)
-    end
-end
+armor_hover.base_animations = table_to_keys(armor_hover.default_animations)
 
 -- Get the player's chosen animation, fall back to the default animation.
 function armor_hover.get_chosen_animation(player, base_animation)
@@ -152,6 +146,28 @@ function armor_hover.set_chosen_animation(player, base_animation, chosen_animati
 
     local meta = player:get_meta()
     meta:set_string("3d_armor_hover:chosen_anim_" .. base_animation, chosen_animation)
+end
+
+------------------------------------------
+-- The behavior when a player stops flying
+
+armor_hover.when_stop_fly_values = { "keep", "hover" }
+armor_hover.is_valid_when_stop_fly_value = list_to_set(armor_hover.when_stop_fly_values)
+armor_hover.when_stop_fly_default = "keep"
+
+function armor_hover.get_when_stop_fly(player)
+    local meta = player:get_meta()
+    return meta:get("3d_armor_hover:when_stop_fly") or armor_hover.when_stop_fly_default
+end
+
+function armor_hover.set_when_stop_fly(player, new_value)
+    if not armor_hover.is_valid_when_stop_fly_value[new_value] then
+        core.chat_send_player(player:get_player_name(), "Invalid base_animation: " .. tostring(new_value))
+        return
+    end
+
+    local meta = player:get_meta()
+    return meta:set_string("3d_armor_hover:when_stop_fly", new_value)
 end
 
 ----------------------------------------
@@ -331,6 +347,8 @@ function armor_hover.global_step()
                     return chosen_anim("hovering") .. mine_suffix
                 end
 
+                local when_stop_fly = armor_hover.get_when_stop_fly(player)
+
                 if when_stop_fly == "keep" then
                     base_animation_transition.new = base_animation_transition.old
                     if base_animation_transition.old == "slow_flying" then
@@ -435,6 +453,15 @@ minetest.register_chatcommand("3ah_set_animation", {
     end
 })
 
+minetest.register_chatcommand("3ah_set_when_stop_fly", {
+    params = string.format("<%s>", table.concat(armor_hover.when_stop_fly_values, "|")),
+    description = string.format("Set the behavior when a player stops flying."),
+    func = function(name, param)
+        local player = core.get_player_by_name(name)
+        armor_hover.set_when_stop_fly(player, param)
+    end
+})
+
 minetest.register_chatcommand("3ah_gui", {
     description = "Open GUI to set animations",
     func = function(name)
@@ -455,5 +482,9 @@ core.register_on_player_receive_fields(function(player, formname, fields)
         if chosen_animation then
             armor_hover.set_chosen_animation(player, base_animation, chosen_animation)
         end
+    end
+
+    if fields.when_stop_fly then
+        armor_hover.set_when_stop_fly(player, fields.when_stop_fly)
     end
 end)
