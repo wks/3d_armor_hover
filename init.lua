@@ -30,8 +30,6 @@ local swim_sneak        = minetest.settings:get_bool("swim_sneak", true)
 local climb_anim        = minetest.settings:get_bool("climb_anim", true)
 local crouch_anim       = minetest.settings:get_bool("crouch_anim", true)
 local crouch_sneak      = minetest.settings:get_bool("crouch_sneak", true)
-local hover_anim        = minetest.settings:get("hover_anim") or "hover1"
-local slow_fly_anim     = minetest.settings:get("slow_fly_anim") or "fly_slow"
 local climb_when_fly    = minetest.settings:get_bool("climb_when_fly", false)
 local when_stop_fly     = minetest.settings:get("when_stop_fly") or "keep"
 
@@ -43,12 +41,13 @@ armor_hover.is_skinsdb  = minetest.get_modpath("skinsdb")
 
 ---------------------------------
 -- Volatile per-player storage
-local base_animations   = {}
+local player_state      = {}
 
 ----------------------------
 -- Initiate files
 
 dofile(modpath .. "/i_functions.lua")
+dofile(modpath .. "/gui.lua")
 
 -------------------------------------
 -- Get Player model to use
@@ -100,11 +99,61 @@ local animations = {
     fly_slow_mine = peri_xy(1600, 90, 0.0, { head_pitch = 0.45 * math.pi / 2 }),
 }
 
+armor_hover.animations = animations
+
 player_api.register_model(player_mod, {
     animation_speed = 30,
     textures = texture,
     animations = animations,
 })
+
+-----------------------------------------
+-- Animation configurations
+
+-- Concrete animations (without "_mine") available for configuration.  See `gui.lua`.
+armor_hover.configurable_animations = { "hover1", "hover2", "fly_slow", "fly_fast" }
+armor_hover.is_animation_configurable = {}
+do
+    for _, anim in ipairs(armor_hover.configurable_animations) do
+        armor_hover.is_animation_configurable[anim] = true
+    end
+end
+
+-- Map each "base animation" (what a player is doing) to concrete animation names (without "_mine").
+-- The keys here is the canonical list of all "base animations".
+armor_hover.default_animations = {
+    hovering = "hover1",
+    slow_flying = "fly_slow",
+    fast_flying = "fly_fast",
+}
+armor_hover.base_animations = {}
+do
+    for k, _ in pairs(armor_hover.default_animations) do
+        table.insert(armor_hover.base_animations, k)
+    end
+end
+
+-- Get the player's chosen animation, fall back to the default animation.
+function armor_hover.get_chosen_animation(player, base_animation)
+    local meta = player:get_meta()
+    return meta:get("3d_armor_hover:chosen_anim_" .. base_animation) or armor_hover.default_animations[base_animation]
+end
+
+-- Set the player's chosen animation.
+function armor_hover.set_chosen_animation(player, base_animation, chosen_animation)
+    if not armor_hover.default_animations[base_animation] then
+        core.chat_send_player(player:get_player_name(), "Invalid base_animation: " .. tostring(base_animation))
+        return
+    end
+    if not armor_hover.is_animation_configurable[chosen_animation] then
+        core.chat_send_player(player:get_player_name(), "Invalid chosen_animation: " .. tostring(chosen_animation))
+        return
+    end
+
+    local meta = player:get_meta()
+    meta:set_string("3d_armor_hover:chosen_anim_" .. base_animation, chosen_animation)
+end
+
 ----------------------------------------
 -- Setting model on join and clearing
 -- local_animations
@@ -171,7 +220,7 @@ function armor_hover.global_step()
         end
 
         -- Determine the animation.
-        local function determine_animation(base_animation)
+        local function determine_animation(base_animation_transition)
             -- Death check.  Remember that we have replaced `player_api.globalstep`.
             if player:get_hp() == 0 then
                 return "lay"
@@ -252,12 +301,16 @@ function armor_hover.global_step()
                     return "fall" .. mine_suffix
                 end
 
+                local function chosen_anim(ba)
+                    return armor_hover.get_chosen_animation(player, ba)
+                end
+
                 -- Use the "Superman fly" animation only when flying fast enough.
                 -- This velocity is only achievable in the fast mode.
                 if speed > 18.0 and
                     controls_wasd
                 then
-                    return "fly_fast" .. mine_suffix
+                    return chosen_anim("fast_flying") .. mine_suffix
                 end
 
                 -- TODO: Add more flying animations
@@ -266,28 +319,28 @@ function armor_hover.global_step()
                     -- If the player holds both left and right or both forward and backward,
                     -- the player will not move, but will switch to slow_fly_anim.
                     -- This is intentional.
-                    base_animation.new = "slow_fly"
-                    return slow_fly_anim .. mine_suffix
+                    base_animation_transition.new = "slow_flying"
+                    return chosen_anim("slow_flying") .. mine_suffix
                 end
 
                 if controls.jump or controls.sneak then
                     -- If the player holds both jump and sneak,
                     -- the player will not move, but will switch to hover_anim.
                     -- This is intentional.
-                    base_animation.new = "hover"
-                    return hover_anim .. mine_suffix
+                    base_animation_transition.new = "hovering"
+                    return chosen_anim("hovering") .. mine_suffix
                 end
 
                 if when_stop_fly == "keep" then
-                    base_animation.new = base_animation.old
-                    if base_animation.old == "slow_fly" then
-                        return slow_fly_anim .. mine_suffix
+                    base_animation_transition.new = base_animation_transition.old
+                    if base_animation_transition.old == "slow_flying" then
+                        return chosen_anim("slow_flying") .. mine_suffix
                     else
-                        return hover_anim .. mine_suffix
+                        return chosen_anim("hovering") .. mine_suffix
                     end
                 else
-                    base_animation.new = "hover"
-                    return hover_anim .. mine_suffix
+                    base_animation_transition.new = "hovering"
+                    return chosen_anim("hovering") .. mine_suffix
                 end
             else
                 -- Fall
@@ -315,8 +368,8 @@ function armor_hover.global_step()
             end
         end
 
-        local base_animation = {
-            old = base_animations[player_name],
+        local base_animation_transition = {
+            old = player_state[player_name],
         }
 
         local animation;
@@ -324,7 +377,7 @@ function armor_hover.global_step()
         -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
         if not attached_to then
             local ani_spd;
-            animation, ani_spd = determine_animation(base_animation)
+            animation, ani_spd = determine_animation(base_animation_transition)
             ani_spd = ani_spd or 30
 
             player_api.set_animation(player, animation, ani_spd)
@@ -334,7 +387,7 @@ function armor_hover.global_step()
         end
 
         -- Regardless whether the player is attached, we update the cached base animation.
-        base_animations[player_name] = base_animation.new
+        player_state[player_name] = base_animation_transition.new
 
         -- Head Animation
         -- We depend on the new `player:set_bone_override` method.
@@ -369,3 +422,38 @@ local player_api_global_step = player_api.globalstep
 player_api.globalstep = function()
     armor_hover.global_step()
 end
+
+minetest.register_chatcommand("3ah_set_animation", {
+    params = "<base_animation> <chosen_animation>",
+    description = string.format("Set animation.  <base_animation>: one of %s; <chosen_animation>: one of %s.",
+        table.concat(armor_hover.base_animations, ", "),
+        table.concat(armor_hover.configurable_animations, ", ")),
+    func = function(name, param)
+        local params = string.split(param, " ")
+        local player = core.get_player_by_name(name)
+        armor_hover.set_chosen_animation(player, params[1], params[2])
+    end
+})
+
+minetest.register_chatcommand("3ah_gui", {
+    description = "Open GUI to set animations",
+    func = function(name)
+        local formspec = armor_hover.get_config_formspec(name)
+        print(formspec)
+
+        minetest.show_formspec(name, "3d_armor_hover:config", formspec)
+    end
+})
+
+core.register_on_player_receive_fields(function(player, formname, fields)
+    if formname ~= "3d_armor_hover:config" then
+        return
+    end
+
+    for _, base_animation in ipairs(armor_hover.base_animations) do
+        chosen_animation = fields["selector_" .. base_animation]
+        if chosen_animation then
+            armor_hover.set_chosen_animation(player, base_animation, chosen_animation)
+        end
+    end
+end)
