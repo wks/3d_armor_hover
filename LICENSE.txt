@@ -1,8 +1,5 @@
 [mod] 3d_armor_hover
 ====================
 Licence code LGPL v2.1
-"Headanim" code by LoneWolfHT MIT Licence                        
-Blender Model/B3Ds as per base MTG - CC BY-SA 3.0
-"3d_armor_trans.png" CC-BY-SA 3.0
-
-
+Images - CC BY-SA 3.0
+Blender and glb Model as per base MTG - CC BY-SA 3.0
