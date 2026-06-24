@@ -29,10 +29,8 @@ local fall_tv           = tonumber(minetest.settings:get("fall_tv", true)) or 15
 -- Convert kp/h back to number of -y blocks per 0.05 of a second.
 fall_tv                 = -1 * (fall_tv / 3.7)
 local swim_anim         = minetest.settings:get_bool("swim_anim", true)
-local swim_sneak        = minetest.settings:get_bool("swim_sneak", true)
 local climb_anim        = minetest.settings:get_bool("climb_anim", true)
 local crouch_anim       = minetest.settings:get_bool("crouch_anim", true)
-local crouch_sneak      = minetest.settings:get_bool("crouch_sneak", true)
 local climb_when_fly    = minetest.settings:get_bool("climb_when_fly", false)
 
 -----------------------

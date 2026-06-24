@@ -1,4 +1,4 @@
-#    Enable Fly Animation
+#    Enable Fly Animation, including all hovering and slow/fast flying animations.
 fly_anim (Enable fly animation) bool true
 
 #    Enable Fall Animation
@@ -10,17 +10,11 @@ fall_tv (Set terminal velocity speed - recommend not exceeding 150 kp/h) int 150
 #    Enable Swim Animation
 swim_anim (Enable swim animation) bool true
 
-#    Enable Swim Sneak - swim through 1x1 hole
-swim_sneak (Enable swim sneak) bool true
-
 #    Enable Climb Animation
 climb_anim (Enable climb animation) bool true
 
 #    Enable Crouch/Duck Animation
 crouch_anim (Enable crouch/duck animation) bool true
-
-#    Enable Crouch/Duck - through through 1.5 hole
-crouch_sneak (Enable crouch/duck animation) bool true
 
 #    When true, the "climb" animation will still be played when flying near climbables.  When false, the animation selection algorithm completely ignore climbables when flying.
 climb_when_fly (Allow climbing when flying) bool false
