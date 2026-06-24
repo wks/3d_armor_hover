@@ -34,6 +34,16 @@ local function formspec_builder()
         table.insert(formspec, str)
     end
 
+    -- Add a place holder and return a function.
+    -- Calling the returned function will set the place holder to a new string.
+    function b:add_later()
+        table.insert(formspec, "")
+        local index = #formspec
+        return function(text)
+            formspec[index] = text
+        end
+    end
+
     function b:get_formspec()
         return table.concat(formspec, "")
     end
@@ -64,7 +74,8 @@ local function linear_layout(horizontal, padding, spacing, left, top, width, hei
     top = top + padding
     width = width - padding * 2
     height = height - padding * 2
-    local cursor = horizontal and left or top
+    local start = horizontal and left or top
+    local cursor = start
     local available = horizontal and width or height
 
     local started = false
@@ -100,6 +111,11 @@ local function linear_layout(horizontal, padding, spacing, left, top, width, hei
         return b:add(nil, special_spacing)
     end
 
+    -- End the layout early.  Return the padded size (current stuffed content size plus twice the padding).
+    function b:cut_off()
+        return cursor - start + padding * 2
+    end
+
     return b
 end
 
@@ -127,7 +143,6 @@ end
 
 armor_hover.gui_style = {
     window_width = 8,
-    window_height = 8,
     padding = 0.375,
     spacing = 0.25,
     title_height = 0.5,
@@ -144,9 +159,12 @@ function armor_hover.get_config_formspec(player_name)
 
     local b = formspec_builder()
     b:add("formspec_version[10]")
-    b:add_format("size[%s]", wh(style.window_width, style.window_height))
 
-    local vlayout = linear_layout(false, style.padding, style.spacing, 0, 0, style.window_width, style.window_height)
+    -- We'll set the size later.
+    local set_size = b:add_later()
+
+    -- Set an unrealistic large height and we will determine the actual size later.
+    local vlayout = linear_layout(false, style.padding, style.spacing, 0, 0, style.window_width, 999999)
 
     b:add_format("label[%s;%s]", xy_wh(vlayout:add(style.title_height)),
         core.formspec_escape("3D Armor Hovering Animation Configuration"))
@@ -218,6 +236,10 @@ function armor_hover.get_config_formspec(player_name)
         add_preview(3, "fly_slow")
         add_preview(4, "fly_fast")
     end
+
+    -- Determine the actual size
+    local window_height = vlayout:cut_off()
+    set_size(string.format("size[%s]", wh(style.window_width, window_height)))
 
     return b:get_formspec()
 end
