@@ -8,7 +8,7 @@ This mod is for players who like playing the Minetest Game in the fly (freemove)
 and those who like the gentle floating feeling of flying or staying in the air.
 
 [3D Armor: Fly & Swim]: https://content.luanti.org/packages/sirrobzeroone/3d_armor_flyswim/
-[sirrobzeroone]: content.luanti.org/users/sirrobzeroone/
+[sirrobzeroone]: https://content.luanti.org/users/sirrobzeroone/
 
 The following player animations and their mining/attacking variants are included.
 
