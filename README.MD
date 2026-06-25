@@ -78,3 +78,11 @@ It could be supported by another mod.
 The algorithm to detemine whether the player is swimming or climbing is rewritten.
 
 The head animation is rewritten using the new API.
+
+## Author and repository
+
+Original work by [sirrobzeroone].
+
+Maintained by [Kunshan Wang (wks)](https://github.com/wks).
+
+Repository: https://github.com/wks/3d_armor_hover

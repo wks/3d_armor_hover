@@ -1,5 +1,7 @@
 [mod] 3d_armor_hover
 ====================
-Licence code LGPL v2.1
-Images - CC BY-SA 3.0
-Blender and glb Model as per base MTG - CC BY-SA 3.0
+
+* Code by Sirrobzeroone and Kunshan Wang, LGPL v2.1
+* `images_source/screenshot.kra`, `textures/3d_armor_hover_icon.jpg`, `screenshot.webp` by Kunshan Wang, CC BY-SA 3.0
+* `swimming_animated.gif` by Sirrobzeroone, CC BY-SA 3.0
+* `skinsdb_3d_armor_character_5_hover.blend`, `skinsdb_3d_armor_character_5_hover.glb` from Minetest Game with modifications by Sirrobzeroone and Kunshan Wang, CC BY-SA 3.0
