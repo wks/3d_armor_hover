@@ -71,6 +71,8 @@ But this mod is intended to be used in worlds where players always have the "fly
 Having an item that can revoke the "fly" privilege may have unforeseen consequences.
 I am also not sure how it will interact with other mods, such as [Aerial], that grant the player the "fly" privilege.
 
+[Aerial]: https://content.luanti.org/packages/EmptyStar/aerial/
+
 The ability to sneak into a 1x1 square is removed.
 I think this ability modifies the game mechanism, and is orthogonal to this mod which modifies the player animation.
 It could be supported by another mod.
