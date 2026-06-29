@@ -291,12 +291,14 @@ function armor_hover.global_step()
                 local is_climbing = is_climbable(0.5) or is_climbable(-0.2)
 
                 if is_climbing then
-                    if controls.jump and not controls.sneak or
-                        controls.sneak and not controls.jump
+                    if controls.jump ~= controls.sneak or
+                        controls.up ~= controls.down or
+                        controls.left ~= controls.right
                     then
                         return "climb"
                     else
-                        -- Note that the player may hold both the jump and the sneak keys at the same time.
+                        -- Note that the player may hold both the jump and the sneak keys,
+                        -- both left and right, or both up and down keys at the same time.
                         -- In that case, the player will not move.
                         -- But if the player is still near a climbable, we play a non-moving climbing animation.
                         return "climb_still"
