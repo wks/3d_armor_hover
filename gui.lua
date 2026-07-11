@@ -173,22 +173,19 @@ function armor_hover.get_config_formspec(player_name)
         local options = armor_hover.configurable_animations
         local options_string = table.concat(options, ",")
 
-        local function add_animation_selector(base_animation, title)
-            local chosen_animation = armor_hover.get_chosen_animation(player, base_animation)
+        for mstate, mstate_map in pairs(armor_hover.mstates) do
+            local chosen_animation = armor_hover.get_chosen_animation(player, mstate)
             local chosen_index = list_find(options, chosen_animation) or 1
 
             local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
-            b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape(title))
+            b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape(mstate_map.description))
             b:add_format("dropdown[%s;selector_%s;%s;%d;false]",
                 xy_wh(c:get(1, 2)),
-                base_animation,
+                mstate,
                 options_string,
                 chosen_index)
         end
 
-        add_animation_selector("hovering", "Hovering")
-        add_animation_selector("slow_flying", "Slow flying")
-        add_animation_selector("fast_flying", "Fast flying")
     end
 
     do
