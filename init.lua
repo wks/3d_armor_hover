@@ -92,10 +92,16 @@ local function clear_local_animation(player)
     player:set_local_animation(none, none, none, none, 30)
 end
 
+local function refresh_eye_offset(player)
+    local eye_offset = armor_hover.get_player_eye_offset(player)
+    player:set_eye_offset(vector.zero(), eye_offset, vector.zero())
+end
+
 minetest.register_on_joinplayer(function(player)
     player_api.set_model(player, player_mod)
     player_api.player_attached[player:get_player_name()] = false
     clear_local_animation(player)
+    refresh_eye_offset(player)
 end)
 
 -- Hack: Force using our player_mod after skinsdb switches skin.
@@ -106,6 +112,7 @@ function skins.skin_class:apply_skin_to_player(player)
     old_apply_skin_to_player(self, player)
     print("Force re-registering player mod:", player_mod)
     player_api.set_model(player, player_mod)
+    refresh_eye_offset(player)
 end
 
 ------------------------------------------------
@@ -377,6 +384,30 @@ minetest.register_chatcommand("3ah_set_when_stop_fly", {
     end
 })
 
+minetest.register_chatcommand("3ah_get_eye_offset", {
+    description = string.format("Get the player's third person back eye offset."),
+    func = function(name, param)
+        local player = core.get_player_by_name(name)
+        local eye_offset = armor_hover.get_player_eye_offset(player)
+        core.chat_send_player(player:get_player_name(), "Eye offset: " .. tostring(eye_offset))
+    end
+})
+
+minetest.register_chatcommand("3ah_set_eye_offset", {
+    params = "(x, y, z)",
+    description = string.format("Set the player's third person back eye offset."),
+    func = function(name, param)
+        local player = core.get_player_by_name(name)
+        local eye_offset = vector.from_string(param)
+        if not eye_offset then
+            core.chat_send_player(player:get_player_name(), "Invalid eye offset: " .. param)
+            return
+        end
+        armor_hover.set_player_eye_offset(player, eye_offset)
+        refresh_eye_offset(player)
+    end
+})
+
 minetest.register_chatcommand("3ah_gui", {
     description = "Open GUI to set animations",
     func = function(name)
@@ -401,5 +432,16 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 
     if fields.when_stop_fly then
         armor_hover.set_when_stop_fly(player, fields.when_stop_fly)
+    end
+
+    if fields.eye_offset then
+        local eye_offset = vector.from_string(fields.eye_offset)
+        if eye_offset then
+            armor_hover.set_player_eye_offset(player, eye_offset)
+            refresh_eye_offset(player)
+        else
+            core.chat_send_player(player:get_player_name(),
+                string.format("Invalid vector '%s'", fields.eye_offset))
+        end
     end
 end)

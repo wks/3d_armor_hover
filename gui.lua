@@ -185,7 +185,6 @@ function armor_hover.get_config_formspec(player_name)
                 options_string,
                 chosen_index)
         end
-
     end
 
     do
@@ -201,6 +200,15 @@ function armor_hover.get_config_formspec(player_name)
             xy_wh(c:get(1, 2)),
             options_string,
             index)
+    end
+
+    do
+        local eye_offset = armor_hover.get_player_eye_offset(player)
+        local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
+        b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape("3rd person rear eye offset"))
+        b:add_format("field[%s;eye_offset;;%s]field_close_on_enter[eye_offset;false]",
+            xy_wh(c:get(1, 2)),
+            vector.to_string(eye_offset))
     end
 
 
