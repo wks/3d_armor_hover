@@ -68,12 +68,16 @@ armor_hover.animations = {
 -- allow the player to select animations for each mstate.  Each mstate has a default animation
 -- (without the `_mine` suffix).
 armor_hover.mstates = {}
+-- This list keeps the order of the mstates, forcing them to appear in the consistent order in
+-- config GUIs.
+armor_hover.mstate_list = {}
 
 local function make_mstate(name, description, default_animation)
     armor_hover.mstates[name] = {
         description = description,
         default_animation = default_animation,
     }
+    table.insert(armor_hover.mstate_list, name)
 end
 
 make_mstate("hovering", "Hovering", "hover1")

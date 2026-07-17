@@ -366,7 +366,7 @@ end
 minetest.register_chatcommand("3ah_set_animation", {
     params = "<mstate> <chosen_animation>",
     description = string.format("Set animation.  <mstate>: one of %s; <chosen_animation>: one of %s.",
-        table.concat(table_to_keys(armor_hover.mstates), ", "),
+        table.concat(armor_hover.mstate_list, ", "),
         table.concat(armor_hover.configurable_animations, ", ")),
     func = function(name, param)
         local params = string.split(param, " ")
@@ -423,7 +423,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
         return
     end
 
-    for mstate, _ in ipairs(armor_hover.mstates) do
+    for mstate, _ in pairs(armor_hover.mstates) do
         local chosen_animation = fields["selector_" .. mstate]
         if chosen_animation then
             armor_hover.set_chosen_animation(player, mstate, chosen_animation)
