@@ -67,6 +67,45 @@ local function xy_wh(x, y, w, h)
     return string.format("%f,%f;%f,%f", x, y, w, h)
 end
 
+-- A helper that builds rects by cutting parts away from a bigger rect.
+local function box_cut_layout(left, top, width, height)
+    local b = {}
+
+    function b:cut_left(size)
+        size = math.min(size, width)
+        local x, y, w, h = left, top, size, height
+        left, width = left + w, width - w
+        return x, y, w, h
+    end
+
+    function b:cut_top(size)
+        size = math.min(size, height)
+        local x, y, w, h = left, top, width, size
+        top, height = top + h, height - h
+        return x, y, w, h
+    end
+
+    function b:cut_right(size)
+        size = math.min(size, width)
+        local x, y, w, h = left + width - size, top, size, height
+        width = width - w
+        return x, y, w, h
+    end
+
+    function b:cut_bottom(size)
+        size = math.min(size, height)
+        local x, y, w, h = left, top + height - size, width, size
+        height = height - h
+        return x, y, w, h
+    end
+
+    function b:rest()
+        return left, top, width, height
+    end
+
+    return b
+end
+
 local function linear_layout(horizontal, padding, spacing, left, top, width, height)
     padding = math.min(width / 2, height / 2, padding)
 
@@ -74,45 +113,45 @@ local function linear_layout(horizontal, padding, spacing, left, top, width, hei
     top = top + padding
     width = width - padding * 2
     height = height - padding * 2
-    local start = horizontal and left or top
-    local cursor = start
-    local available = horizontal and width or height
+
+    local bcl = box_cut_layout(left, top, width, height)
 
     local started = false
 
     local b = {}
 
-    function b:add(size, special_spacing)
-        local this_spacing = special_spacing and special_spacing or spacing
-        local result_low = cursor
-        if started then
-            result_low = result_low + this_spacing
-            available = available - this_spacing
-        else
+    local function do_spacing(special_spacing)
+        if not started then
             started = true
-            print("set started to true")
-        end
-
-        if not size then
-            size = available
-        end
-
-        cursor = result_low + size
-        available = available - size
-
-        if horizontal then
-            return result_low, top, size, height
         else
-            return left, result_low, width, size
+            local this_spacing = special_spacing or spacing
+            if horizontal then
+                bcl:cut_left(this_spacing)
+            else
+                bcl:cut_top(this_spacing)
+            end
+        end
+    end
+
+    function b:add(size, special_spacing)
+        do_spacing(special_spacing)
+        if horizontal then
+            return bcl:cut_left(size)
+        else
+            return bcl:cut_top(size)
         end
     end
 
     function b:rest(special_spacing)
-        return b:add(nil, special_spacing)
+        do_spacing(special_spacing)
+        return bcl:rest()
     end
 
     -- End the layout early.  Return the padded size (current stuffed content size plus twice the padding).
     function b:cut_off()
+        local cur_left, cur_top, _, _ = bcl:rest()
+        local start = horizontal and left or top
+        local cursor = horizontal and cur_left or cur_top
         return cursor - start + padding * 2
     end
 
