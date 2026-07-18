@@ -111,7 +111,16 @@ function armor_hover.set_chosen_animation(player, mstate, chosen_animation)
     meta:set_string("3d_armor_hover:chosen_anim_" .. mstate, chosen_animation)
 end
 
-armor_hover.default_eye_offset = vector.zero()
+-- Clear the player's chosen animation.  The next "get_" call will get the default value.
+function armor_hover.clear_chosen_animation(player, mstate)
+    local meta = player:get_meta()
+    meta:set_string("3d_armor_hover:chosen_anim_" .. mstate, "")
+end
+
+-----------------------------------------
+-- Eye offset configurations
+
+armor_hover.default_eye_offset = vector.new(4, 2, 2)
 
 -- Get the player's eye offset, fall back to the default offset
 function armor_hover.get_player_eye_offset(player)
@@ -124,4 +133,10 @@ end
 function armor_hover.set_player_eye_offset(player, offset)
     local meta = player:get_meta()
     meta:set_string("3d_armor_hover:eye_offset", vector.to_string(offset))
+end
+
+-- Clear the player's chosen animation.  The next "get_" call will get the default value.
+function armor_hover.clear_player_eye_offset(player)
+    local meta = player:get_meta()
+    meta:set_string("3d_armor_hover:eye_offset", "")
 end

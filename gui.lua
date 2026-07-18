@@ -206,16 +206,27 @@ function armor_hover.get_config_formspec(player_name)
     -- Set an unrealistic large height and we will determine the actual size later.
     local vlayout = linear_layout(false, style.padding, style.spacing, 0, 0, style.window_width, 999999)
 
-    local function label_widget_buttons(label_text, info, callback)
+    local function label_widget_buttons(label_text, info, reset_name, callback)
         b:add_format("label[%s;%s]",
             xy_wh(vlayout:add(style.label_height)),
             core.formspec_escape(label_text))
+
         local bcl = box_cut_layout(vlayout:add(style.dropdown_height, 0))
+
+        -- Unconditionall reserve space for the info and reset icons.
+        local info_xywh = xy_wh(bcl:cut_right(style.info_width))
+        bcl:cut_right(style.spacing)
+        local reset_xywh = xy_wh(bcl:cut_right(style.info_width))
+        bcl:cut_right(style.spacing)
+
         if info then
-            local info_xywh = xy_wh(bcl:cut_right(style.info_width))
             b:add_format("image[%s;settings_info.png]", info_xywh)
             b:add_format("tooltip[%s;%s]", info_xywh, core.formspec_escape(info))
-            bcl:cut_right(style.spacing)
+        end
+
+        if reset_name then
+            b:add_format("image_button[%s;settings_reset.png;%s;]", reset_xywh, reset_name)
+            b:add_format("tooltip[%s;%s]", reset_xywh, core.formspec_escape("Reset to default"))
         end
         callback(bcl)
     end
@@ -232,9 +243,8 @@ function armor_hover.get_config_formspec(player_name)
             local chosen_animation = armor_hover.get_chosen_animation(player, mstate)
             local chosen_index = list_find(options, chosen_animation) or 1
 
-
             local label_text = string.format("%s animation:", mstate_map.description)
-            label_widget_buttons(label_text, nil, function(bcl)
+            label_widget_buttons(label_text, nil, "reset_selector_" .. mstate, function(bcl)
                 b:add_format("dropdown[%s;selector_%s;%s;%d;false]",
                     xy_wh(bcl:rest()),
                     mstate,
@@ -256,7 +266,7 @@ function armor_hover.get_config_formspec(player_name)
 keep: Keep the flying animation
 hover: Switch to hovering animation]]
 
-        label_widget_buttons(label_text, info, function(bcl)
+        label_widget_buttons(label_text, info, "reset_when_stop_fly", function(bcl)
             b:add_format("dropdown[%s;when_stop_fly;%s;%d;false]",
                 xy_wh(bcl.rest()),
                 options_string,
@@ -273,7 +283,7 @@ Add an eye offset in third-person rear view mode to make it more comfortable to 
 The value is a vector of the form "(dx, dy, dz)", representing the offset from the character model's eye position.
 Positive dx moves to the right; positive dy moves to the top; and positive dz moves to the front.]]
 
-        label_widget_buttons(label_text, info, function(bcl)
+        label_widget_buttons(label_text, info, "reset_eye_offset", function(bcl)
             b:add_format("field[%s;eye_offset;;%s]field_close_on_enter[eye_offset;false]",
                 xy_wh(bcl.rest()),
                 vector.to_string(eye_offset))

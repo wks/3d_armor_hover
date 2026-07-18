@@ -83,6 +83,12 @@ function armor_hover.set_when_stop_fly(player, new_value)
     return meta:set_string("3d_armor_hover:when_stop_fly", new_value)
 end
 
+-- Clear the when-stop-flying behavior.  The next "get_" will get the default value.
+function armor_hover.clear_when_stop_fly(player)
+    local meta = player:get_meta()
+    return meta:set_string("3d_armor_hover:when_stop_fly", "")
+end
+
 ----------------------------------------
 -- Setting model on join and clearing
 -- local_animations
@@ -418,30 +424,82 @@ minetest.register_chatcommand("3ah_gui", {
     end
 })
 
+local function refresh_gui(player)
+    local name = player:get_player_name()
+    local formspec = armor_hover.get_config_formspec(name)
+    print(formspec)
+    minetest.show_formspec(name, "3d_armor_hover:config", formspec)
+end
+
 core.register_on_player_receive_fields(function(player, formname, fields)
     if formname ~= "3d_armor_hover:config" then
         return
     end
 
+    print("=== Begin dump fields...")
+    for k, v in pairs(fields) do
+        print(k, v)
+    end
+    print("=== End dump fields.")
+
+    -- Check if any buttons are pressed.  If any, return immediately without processing other fields.
+    for mstate, _ in pairs(armor_hover.mstates) do
+        if fields["reset_selector_" .. mstate] then
+            print(string.format("Resetting chosen animation of %s", mstate))
+            armor_hover.clear_chosen_animation(player, mstate)
+            refresh_gui(player)
+            return
+        end
+    end
+
+    if fields.reset_when_stop_fly then
+        armor_hover.clear_when_stop_fly(player)
+        refresh_gui(player)
+        return
+    end
+
+    if fields.reset_eye_offset then
+        print("Clearing eye offset")
+        armor_hover.clear_player_eye_offset(player)
+        refresh_eye_offset(player)
+        refresh_gui(player)
+        return
+    end
+
+    -- Then check fields where the enter key is pressed
+
+    local key_enter_field = fields.key_enter_field
+    if key_enter_field == "eye_offset" then
+        print("Eye offset is sent:", fields.eye_offset)
+        local eye_offset = vector.from_string(fields.eye_offset)
+        if eye_offset then
+            print("Set eye offset");
+            armor_hover.set_player_eye_offset(player, eye_offset)
+            refresh_eye_offset(player)
+        else
+            print("Invalid eye offset");
+            core.chat_send_player(player:get_player_name(),
+                string.format("Invalid vector '%s'", fields.eye_offset))
+        end
+        refresh_gui(player)
+        return
+    end
+
+    -- Then check other fields.
+
     for mstate, _ in pairs(armor_hover.mstates) do
         local chosen_animation = fields["selector_" .. mstate]
         if chosen_animation then
+            print(string.format("Setting chosen animation of %s to %s", mstate, chosen_animation))
             armor_hover.set_chosen_animation(player, mstate, chosen_animation)
+            refresh_gui(player)
+            return
         end
     end
 
     if fields.when_stop_fly then
         armor_hover.set_when_stop_fly(player, fields.when_stop_fly)
-    end
-
-    if fields.eye_offset then
-        local eye_offset = vector.from_string(fields.eye_offset)
-        if eye_offset then
-            armor_hover.set_player_eye_offset(player, eye_offset)
-            refresh_eye_offset(player)
-        else
-            core.chat_send_player(player:get_player_name(),
-                string.format("Invalid vector '%s'", fields.eye_offset))
-        end
+        refresh_gui(player)
+        return
     end
 end)
