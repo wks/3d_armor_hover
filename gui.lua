@@ -301,7 +301,7 @@ Positive dx moves to the right; positive dy moves to the top; and positive dz mo
         local textures = table.concat(prop.textures, ",")
         local function add_preview(index, anim)
             local animation = armor_hover.animations[anim]
-            print(anim, animation.x, animation.y)
+            armor_hover.debug(anim, animation.x, animation.y)
             local vlayout2 = linear_layout(false, 0, 0, hlayout:get(1, index))
             b:add_format("label[%s;%s]", xy_wh(vlayout2:add(style.label_height)), core.formspec_escape(anim))
             b:add_format("model[%s;preview_%s;%s;%s;0,180;false;true;%d,%d;30]",

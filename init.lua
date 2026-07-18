@@ -23,6 +23,7 @@ armor_hover             = {}
 local modname           = minetest.get_current_modname()
 local modpath           = minetest.get_modpath(modname)
 
+local debug             = minetest.settings:get_bool("debug", false)
 local fly_anim          = minetest.settings:get_bool("fly_anim", true)
 local fall_anim         = minetest.settings:get_bool("fall_anim", true)
 local fall_tv           = tonumber(minetest.settings:get("fall_tv", true)) or 150
@@ -32,6 +33,15 @@ local swim_anim         = minetest.settings:get_bool("swim_anim", true)
 local climb_anim        = minetest.settings:get_bool("climb_anim", true)
 local crouch_anim       = minetest.settings:get_bool("crouch_anim", true)
 local climb_when_fly    = minetest.settings:get_bool("climb_when_fly", false)
+
+-----------------------
+-- Debugging
+
+function armor_hover.debug(...)
+    if debug then
+        print(string.format(...))
+    end
+end
 
 -----------------------
 -- Conditional mods
@@ -114,9 +124,9 @@ end)
 local old_apply_skin_to_player = skins.skin_class.apply_skin_to_player
 
 function skins.skin_class:apply_skin_to_player(player)
-    print("Letting skinsdb apply skin...")
+    armor_hover.debug("Letting skinsdb apply skin...")
     old_apply_skin_to_player(self, player)
-    print("Force re-registering player mod:", player_mod)
+    armor_hover.debug("Force re-registering player mod: %s", player_mod)
     player_api.set_model(player, player_mod)
     refresh_eye_offset(player)
 end
@@ -418,7 +428,7 @@ minetest.register_chatcommand("3ah_gui", {
     description = "Open GUI to set animations",
     func = function(name)
         local formspec = armor_hover.get_config_formspec(name)
-        print(formspec)
+        armor_hover.debug("%s", formspec)
 
         minetest.show_formspec(name, "3d_armor_hover:config", formspec)
     end
@@ -427,7 +437,7 @@ minetest.register_chatcommand("3ah_gui", {
 local function refresh_gui(player)
     local name = player:get_player_name()
     local formspec = armor_hover.get_config_formspec(name)
-    print(formspec)
+    armor_hover.debug("%s", formspec)
     minetest.show_formspec(name, "3d_armor_hover:config", formspec)
 end
 
@@ -436,16 +446,16 @@ core.register_on_player_receive_fields(function(player, formname, fields)
         return
     end
 
-    print("=== Begin dump fields...")
+    armor_hover.debug("=== Begin dump fields...")
     for k, v in pairs(fields) do
-        print(k, v)
+        armor_hover.debug("%s: %s", k, tostring(v))
     end
-    print("=== End dump fields.")
+    armor_hover.debug("=== End dump fields.")
 
     -- Check if any buttons are pressed.  If any, return immediately without processing other fields.
     for mstate, _ in pairs(armor_hover.mstates) do
         if fields["reset_selector_" .. mstate] then
-            print(string.format("Resetting chosen animation of %s", mstate))
+            armor_hover.debug("Resetting chosen animation of %s", mstate)
             armor_hover.clear_chosen_animation(player, mstate)
             refresh_gui(player)
             return
@@ -459,7 +469,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     if fields.reset_eye_offset then
-        print("Clearing eye offset")
+        armor_hover.debug("Clearing eye offset")
         armor_hover.clear_player_eye_offset(player)
         refresh_eye_offset(player)
         refresh_gui(player)
@@ -470,14 +480,14 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 
     local key_enter_field = fields.key_enter_field
     if key_enter_field == "eye_offset" then
-        print("Eye offset is sent:", fields.eye_offset)
+        armor_hover.debug("Eye offset: %s", fields.eye_offset)
         local eye_offset = vector.from_string(fields.eye_offset)
         if eye_offset then
-            print("Set eye offset");
+            armor_hover.debug("Set eye offset.")
             armor_hover.set_player_eye_offset(player, eye_offset)
             refresh_eye_offset(player)
         else
-            print("Invalid eye offset");
+            armor_hover.debug("Invalid eye offset.")
             core.chat_send_player(player:get_player_name(),
                 string.format("Invalid vector '%s'", fields.eye_offset))
         end
@@ -490,7 +500,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     for mstate, _ in pairs(armor_hover.mstates) do
         local chosen_animation = fields["selector_" .. mstate]
         if chosen_animation then
-            print(string.format("Setting chosen animation of %s to %s", mstate, chosen_animation))
+            armor_hover.debug("Setting chosen animation of %s to %s", mstate, chosen_animation)
             armor_hover.set_chosen_animation(player, mstate, chosen_animation)
             refresh_gui(player)
             return

@@ -1,3 +1,6 @@
+#    Print extra debug info on the console or via direct message
+debug (Enable debugging) bool false
+
 #    Enable Fly Animation, including all hovering and slow/fast flying animations.
 fly_anim (Enable fly animation) bool true
 
