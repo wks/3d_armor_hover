@@ -185,8 +185,9 @@ armor_hover.gui_style = {
     padding = 0.375,
     spacing = 0.25,
     title_height = 0.5,
-    label_height = 0.4,
+    label_height = 0.3,
     dropdown_height = 0.5,
+    info_width = 0.5,
 }
 
 local ENABLE_PREVIEW = false
@@ -205,6 +206,20 @@ function armor_hover.get_config_formspec(player_name)
     -- Set an unrealistic large height and we will determine the actual size later.
     local vlayout = linear_layout(false, style.padding, style.spacing, 0, 0, style.window_width, 999999)
 
+    local function label_widget_buttons(label_text, info, callback)
+        b:add_format("label[%s;%s]",
+            xy_wh(vlayout:add(style.label_height)),
+            core.formspec_escape(label_text))
+        local bcl = box_cut_layout(vlayout:add(style.dropdown_height, 0))
+        if info then
+            local info_xywh = xy_wh(bcl:cut_right(style.info_width))
+            b:add_format("image[%s;settings_info.png]", info_xywh)
+            b:add_format("tooltip[%s;%s]", info_xywh, core.formspec_escape(info))
+            bcl:cut_right(style.spacing)
+        end
+        callback(bcl)
+    end
+
     b:add_format("label[%s;%s]", xy_wh(vlayout:add(style.title_height)),
         core.formspec_escape("3D Armor Hovering Animation Configuration"))
 
@@ -217,13 +232,15 @@ function armor_hover.get_config_formspec(player_name)
             local chosen_animation = armor_hover.get_chosen_animation(player, mstate)
             local chosen_index = list_find(options, chosen_animation) or 1
 
-            local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
-            b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape(mstate_map.description))
-            b:add_format("dropdown[%s;selector_%s;%s;%d;false]",
-                xy_wh(c:get(1, 2)),
-                mstate,
-                options_string,
-                chosen_index)
+
+            local label_text = string.format("%s animation:", mstate_map.description)
+            label_widget_buttons(label_text, nil, function(bcl)
+                b:add_format("dropdown[%s;selector_%s;%s;%d;false]",
+                    xy_wh(bcl:rest()),
+                    mstate,
+                    options_string,
+                    chosen_index)
+            end)
         end
     end
 
@@ -234,21 +251,33 @@ function armor_hover.get_config_formspec(player_name)
         local cur_value = armor_hover.get_when_stop_fly(player)
         local index = list_find(options, cur_value)
 
-        local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
-        b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape("When stop flying..."))
-        b:add_format("dropdown[%s;when_stop_fly;%s;%d;false]",
-            xy_wh(c:get(1, 2)),
-            options_string,
-            index)
+        local label_text = "When stop moving during flight..."
+        local info = [[
+keep: Keep the flying animation
+hover: Switch to hovering animation]]
+
+        label_widget_buttons(label_text, info, function(bcl)
+            b:add_format("dropdown[%s;when_stop_fly;%s;%d;false]",
+                xy_wh(bcl.rest()),
+                options_string,
+                index)
+        end)
     end
 
     do
         local eye_offset = armor_hover.get_player_eye_offset(player)
-        local c = even_layout(1, 2, 0, style.spacing, vlayout:add(style.dropdown_height))
-        b:add_format("label[%s;%s]", xy_wh(c:get(1, 1)), core.formspec_escape("3rd person rear eye offset"))
-        b:add_format("field[%s;eye_offset;;%s]field_close_on_enter[eye_offset;false]",
-            xy_wh(c:get(1, 2)),
-            vector.to_string(eye_offset))
+
+        local label_text = "3rd person rear view eye offset:"
+        local info = [[
+Add an eye offset in third-person rear view mode to make it more comfortable to play in third-person mode.
+The value is a vector of the form "(dx, dy, dz)", representing the offset from the character model's eye position.
+Positive dx moves to the right; positive dy moves to the top; and positive dz moves to the front.]]
+
+        label_widget_buttons(label_text, info, function(bcl)
+            b:add_format("field[%s;eye_offset;;%s]field_close_on_enter[eye_offset;false]",
+                xy_wh(bcl.rest()),
+                vector.to_string(eye_offset))
+        end)
     end
 
 
