@@ -39,16 +39,27 @@ Some player skins look better in one animation than the other.
 
 ## Requirements and compatibility
 
-This mod requires the [Minetest Game].
-It requires the [3D Armor] (`3d_armor`) and the [SkinsDB] (`skinsdb`) mod.
+This mod currently requires the [Minetest Game].
+I also tested it on [Asuna].
+It should also work with other games based on the Minetest Game.
+It requires the [3D Armor] (`3d_armor`) mod, and optionally depends on the [SkinsDB] (`skinsdb`) mod.
 
 I tested it on Luanti 5.16.1, but it should work with slightly older versions.
 
 [Minetest Game]: https://content.luanti.org/packages/Luanti/minetest_game/
+[Asuna]: https://content.luanti.org/packages/EmptyStar/asuna/
 [3D Armor]: https://content.luanti.org/packages/stu/3d_armor/
 [SkinsDB]: https://content.luanti.org/packages/bell07/skinsdb/
 
-## How it works
+## Interactions with other mods
+
+### SkinsDB (`skinsdb`)
+
+The player model is derived from the SkinsDB mod, and the skins can be selected using the SkinsDB mod.
+However, even if the SkinsDB mod is absent, this mod contains a few bundled skins for the players to use.
+They can be selected in the configuration GUI (open with the `/3ah_gui` command).
+
+## How this mod works
 
 This mod overrides the "global step" function of Minetest Game's `player_api` and try to determine the player animation according to the player's pressed keys, mouse buttons, current velocity, adjacent objects, etc.
 
@@ -58,7 +69,7 @@ When flying, it simply overrides the standing and walking animations.
 
 ## Differences from the original 3D Armor: Fly & Swim mod
 
-`3d_armor` and `skinsdb` are required instead of optional dependencies.
+`3d_armor` is an required instead of optional dependencies.
 This is the first Luanti mod I made,
 and I currently don't want to maintain too many animations,
 such as one for MTG's default character model, one for `3d_armor`, one for `skinsdb`,

@@ -140,3 +140,9 @@ function armor_hover.clear_player_eye_offset(player)
     local meta = player:get_meta()
     meta:set_string("3d_armor_hover:eye_offset", "")
 end
+
+-- Refresh a player's eye offset when settings changed.
+function armor_hover.refresh_eye_offset(player)
+    local eye_offset = armor_hover.get_player_eye_offset(player)
+    player:set_eye_offset(vector.zero(), eye_offset, vector.zero())
+end

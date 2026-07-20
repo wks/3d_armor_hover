@@ -18,58 +18,50 @@
 ----------------------------
 -- Settings
 
-armor_hover             = {}
+armor_hover          = {}
 
-local modname           = minetest.get_current_modname()
-local modpath           = minetest.get_modpath(modname)
+local modname        = minetest.get_current_modname()
+local modpath        = minetest.get_modpath(modname)
 
-local debug             = minetest.settings:get_bool("debug", false)
-local fly_anim          = minetest.settings:get_bool("fly_anim", true)
-local fall_anim         = minetest.settings:get_bool("fall_anim", true)
-local fall_tv           = tonumber(minetest.settings:get("fall_tv", true)) or 150
+local debug          = minetest.settings:get_bool("debug", false)
+local fly_anim       = minetest.settings:get_bool("fly_anim", true)
+local fall_anim      = minetest.settings:get_bool("fall_anim", true)
+local fall_tv        = tonumber(minetest.settings:get("fall_tv", true)) or 150
 -- Convert kp/h back to number of -y blocks per 0.05 of a second.
-fall_tv                 = -1 * (fall_tv / 3.7)
-local swim_anim         = minetest.settings:get_bool("swim_anim", true)
-local climb_anim        = minetest.settings:get_bool("climb_anim", true)
-local crouch_anim       = minetest.settings:get_bool("crouch_anim", true)
-local climb_when_fly    = minetest.settings:get_bool("climb_when_fly", false)
+fall_tv              = -1 * (fall_tv / 3.7)
+local swim_anim      = minetest.settings:get_bool("swim_anim", true)
+local climb_anim     = minetest.settings:get_bool("climb_anim", true)
+local crouch_anim    = minetest.settings:get_bool("crouch_anim", true)
+local climb_when_fly = minetest.settings:get_bool("climb_when_fly", false)
 
 -----------------------
 -- Debugging
 
-function armor_hover.debug(...)
+function armor_hover.debug(fmt, ...)
     if debug then
-        print(string.format(...))
+        print(string.format("[3d_armor_hover] " .. fmt, ...))
     end
 end
 
 -----------------------
 -- Conditional mods
 
-armor_hover.is_3d_armor = minetest.get_modpath("3d_armor")
-armor_hover.is_skinsdb  = minetest.get_modpath("skinsdb")
+armor_hover.is_3d_armor   = minetest.get_modpath("3d_armor")
+armor_hover.is_skinsdb    = minetest.get_modpath("skinsdb")
+armor_hover.is_player_api = minetest.get_modpath("player_api")
 
 ---------------------------------
 -- Volatile per-player storage
-local player_mstate     = {}
+local player_mstate       = {}
 
 ----------------------------
 -- Initiate files
 
 dofile(modpath .. "/i_functions.lua")
+dofile(modpath .. "/model_backend.lua")
+dofile(modpath .. "/skin_backend.lua")
 dofile(modpath .. "/animations.lua")
 dofile(modpath .. "/gui.lua")
-
--------------------------------------
--- Get Player model to use
-
-local player_mod, texture = armor_hover.get_player_model()
-
-player_api.register_model(player_mod, {
-    animation_speed = 30,
-    textures = texture,
-    animations = armor_hover.animations,
-})
 
 ------------------------------------------
 -- The behavior when a player stops flying
@@ -97,38 +89,6 @@ end
 function armor_hover.clear_when_stop_fly(player)
     local meta = player:get_meta()
     return meta:set_string("3d_armor_hover:when_stop_fly", "")
-end
-
-----------------------------------------
--- Setting model on join and clearing
--- local_animations
-
-local function clear_local_animation(player)
-    local none = { x = 0, y = 0 }
-    player:set_local_animation(none, none, none, none, 30)
-end
-
-local function refresh_eye_offset(player)
-    local eye_offset = armor_hover.get_player_eye_offset(player)
-    player:set_eye_offset(vector.zero(), eye_offset, vector.zero())
-end
-
-minetest.register_on_joinplayer(function(player)
-    player_api.set_model(player, player_mod)
-    player_api.player_attached[player:get_player_name()] = false
-    clear_local_animation(player)
-    refresh_eye_offset(player)
-end)
-
--- Hack: Force using our player_mod after skinsdb switches skin.
-local old_apply_skin_to_player = skins.skin_class.apply_skin_to_player
-
-function skins.skin_class:apply_skin_to_player(player)
-    armor_hover.debug("Letting skinsdb apply skin...")
-    old_apply_skin_to_player(self, player)
-    armor_hover.debug("Force re-registering player mod: %s", player_mod)
-    player_api.set_model(player, player_mod)
-    refresh_eye_offset(player)
 end
 
 ------------------------------------------------
@@ -336,10 +296,9 @@ function armor_hover.global_step()
             animation, ani_spd = determine_animation(mstate_transition)
             ani_spd = ani_spd or 30
 
-            player_api.set_animation(player, animation, ani_spd)
-            clear_local_animation(player)
+            armor_hover.model_backend:set_animation(player, animation, ani_spd)
         else
-            animation = player_api.get_animation(player).animation
+            animation = armor_hover.model_backend:get_animation_name(player)
         end
 
         -- Regardless whether the player is attached, we update the cached base animation.
@@ -367,17 +326,30 @@ function armor_hover.global_step()
     end
 end
 
--- Hack: Override player_api.globalstep.
--- player_api.globalstep will set animation.  If we register another global_step and change
--- the animation to a different value, the game engine will perceive that the animation is
--- constantly changing.  If that happens, the animation frame will be constantly reset to the
--- starting frame, preventing the animation from playing.
--- Instead, we disable player_api.globalstep and let it run our global_step.
-local player_api_global_step = player_api.globalstep
+-------------------------------------
+-- Load player model
 
-player_api.globalstep = function()
-    armor_hover.global_step()
-end
+local player_mod, texture = armor_hover.get_player_model()
+armor_hover.player_mod = player_mod
+
+-------------------------------------
+-- Initialize the model backend
+
+armor_hover.model_backend:initialize()
+
+-------------------------------------
+-- Initialize the skin backend
+
+armor_hover.skin_backend:initialize()
+
+----------------------------------------
+-- Register player-join hook
+
+minetest.register_on_joinplayer(function(player)
+    armor_hover.model_backend:on_joinplayer(player)
+    armor_hover.refresh_eye_offset(player)
+    armor_hover.skin_backend:on_joinplayer(player)
+end)
 
 minetest.register_chatcommand("3ah_set_animation", {
     params = "<mstate> <chosen_animation>",
@@ -420,7 +392,7 @@ minetest.register_chatcommand("3ah_set_eye_offset", {
             return
         end
         armor_hover.set_player_eye_offset(player, eye_offset)
-        refresh_eye_offset(player)
+        armor_hover.refresh_eye_offset(player)
     end
 })
 
@@ -471,7 +443,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     if fields.reset_eye_offset then
         armor_hover.debug("Clearing eye offset")
         armor_hover.clear_player_eye_offset(player)
-        refresh_eye_offset(player)
+        armor_hover.refresh_eye_offset(player)
         refresh_gui(player)
         return
     end
@@ -485,7 +457,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
         if eye_offset then
             armor_hover.debug("Set eye offset.")
             armor_hover.set_player_eye_offset(player, eye_offset)
-            refresh_eye_offset(player)
+            armor_hover.refresh_eye_offset(player)
         else
             armor_hover.debug("Invalid eye offset.")
             core.chat_send_player(player:get_player_name(),
