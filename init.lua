@@ -396,6 +396,31 @@ minetest.register_chatcommand("3ah_set_eye_offset", {
     end
 })
 
+if armor_hover.skin_backend.name == "bundled_skins" then
+    minetest.register_chatcommand("3ah_list_skins", {
+        description = string.format("Print a list of available skins."),
+        func = function(name, param)
+            local player = core.get_player_by_name(name)
+            local strings = {}
+            for index, skin in ipairs(armor_hover.skin_backend.skins) do
+                table.insert(strings, string.format("%d: %s\n", index, skin.skin_name))
+            end
+            local message = table.concat(strings)
+            core.chat_send_player(player:get_player_name(), message)
+        end
+    })
+
+    minetest.register_chatcommand("3ah_set_skin", {
+        params = "<skin_index>",
+        description = string.format("Set the player's skin."),
+        func = function(name, param)
+            local player = core.get_player_by_name(name)
+            local skin_index = tonumber(param)
+            armor_hover.skin_backend:set_player_skin_index(player, skin_index)
+        end
+    })
+end
+
 minetest.register_chatcommand("3ah_gui", {
     description = "Open GUI to set animations",
     func = function(name)
@@ -420,11 +445,21 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 
     armor_hover.debug("=== Begin dump fields...")
     for k, v in pairs(fields) do
-        armor_hover.debug("%s: %s", k, tostring(v))
+        armor_hover.debug("%s: [%s] type: %s", k, tostring(v), type(v))
     end
     armor_hover.debug("=== End dump fields.")
 
     -- Check if any buttons are pressed.  If any, return immediately without processing other fields.
+    if fields.reset_skin then
+        if armor_hover.skin_backend.name == "bundled_skins" then
+            armor_hover.skin_backend:clear_player_skin_index(player)
+            refresh_gui(player)
+            return
+        else
+            armor_hover.debug("Player %s attempt to reset skin when not using bundled skins", player:get_player_name())
+        end
+    end
+
     for mstate, _ in pairs(armor_hover.mstates) do
         if fields["reset_selector_" .. mstate] then
             armor_hover.debug("Resetting chosen animation of %s", mstate)
@@ -468,6 +503,16 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     -- Then check other fields.
+
+    if fields.skin then
+        if armor_hover.skin_backend.name == "bundled_skins" then
+            armor_hover.skin_backend:set_player_skin_index(player, tonumber(fields.skin))
+            refresh_gui(player)
+            return
+        else
+            armor_hover.debug("Player %s attempt to set skin when not using bundled skins", player:get_player_name())
+        end
+    end
 
     for mstate, _ in pairs(armor_hover.mstates) do
         local chosen_animation = fields["selector_" .. mstate]

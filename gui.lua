@@ -234,6 +234,26 @@ function armor_hover.get_config_formspec(player_name)
     b:add_format("label[%s;%s]", xy_wh(vlayout:add(style.title_height)),
         core.formspec_escape("3D Armor Hovering Animation Configuration"))
 
+    -- Skin switcher (if using bundled skins)
+    if armor_hover.skin_backend.name == "bundled_skins" then
+        local label_text = "Skin:"
+        local info = "Select the player skin."
+        local resetter = "reset_skin"
+        local skin_names = {}
+        for i, skin in ipairs(armor_hover.skin_backend.skins) do
+            table.insert(skin_names, core.formspec_escape(skin.skin_name))
+        end
+        local skin_names_string = table.concat(skin_names, ",")
+        local chosen_index = armor_hover.skin_backend:get_player_skin_index(player)
+        label_widget_buttons(label_text, info, resetter, function(bcl)
+            b:add_format("dropdown[%s;skin;%s;%d;true]",
+                xy_wh(bcl:rest()),
+                skin_names_string,
+                chosen_index)
+        end)
+    end
+
+    -- Animation configurations
     do
         local options = armor_hover.configurable_animations
         local options_string = table.concat(options, ",")
@@ -254,6 +274,7 @@ function armor_hover.get_config_formspec(player_name)
         end
     end
 
+    -- When-stop-fly behavior
     do
         local options = armor_hover.when_stop_fly_values
         local options_string = table.concat(options, ",")
@@ -274,6 +295,7 @@ hover: Switch to hovering animation]]
         end)
     end
 
+    -- Eye offset
     do
         local eye_offset = armor_hover.get_player_eye_offset(player)
 

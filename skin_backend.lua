@@ -124,7 +124,7 @@ local bundled_skins_backend = {
     end,
     apply_skin = function(self, player)
         local player_name = player:get_player_name()
-        local skin = self.skins[self.default_skin_index]
+        local skin = self:get_player_skin(player)
         local skin_texture_file = skin.file_prefix .. ".png"
         local armor_texture = armor.textures[player_name].armor or "blank.png"
         local wielditem_texture = armor.textures[player_name].wielditem or "blank.png"
@@ -138,6 +138,31 @@ local bundled_skins_backend = {
         })
     end,
     on_joinplayer = function(self, player)
+        self:apply_skin(player)
+    end,
+    get_player_skin_index = function(self, player)
+        local player_meta = player:get_meta()
+        local skin_index = player_meta:get_int("3d_armor_hover_bundled_skin_index")
+        skin_index = skin_index ~= 0 and skin_index or self.default_skin_index
+        return skin_index
+    end,
+    get_player_skin = function(self, player)
+        local skin_index = self:get_player_skin_index(player)
+        return self.skins[skin_index] or self.skins[self.default_skin_index]
+    end,
+    set_player_skin_index = function(self, player, skin_index)
+        if not self.skins[skin_index] then
+            armor_hover.debug("Invalid skin index: %d", skin_index)
+            self:clear_player_skin_index(player)
+        end
+
+        local player_meta = player:get_meta()
+        player_meta:set_int("3d_armor_hover_bundled_skin_index", skin_index)
+        self:apply_skin(player)
+    end,
+    clear_player_skin_index = function(self, player)
+        local player_meta = player:get_meta()
+        player_meta:set_string("3d_armor_hover_bundled_skin_index", "")
         self:apply_skin(player)
     end,
 }
