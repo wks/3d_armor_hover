@@ -73,6 +73,12 @@ local bundled_skins_backend = {
         local meta_path  = modpath .. "/meta"
         local meta_files = core.get_dir_list(meta_path, false)
 
+        -- Many skins from the SkinsDB include HTML character entities which should be escaped.
+        -- "&eacute;" seems to be the only entity found in the metadata.
+        local escapes    = {
+            ["&eacute;"] = "é",
+        }
+
         local function do_dir_entry(filename)
             local file_prefix = filename:match("^(.+)%.txt")
             if not file_prefix then
@@ -89,7 +95,11 @@ local bundled_skins_backend = {
 
             local skin_name = f:read()
 
-            if not skin_name then
+            if skin_name then
+                for k, v in pairs(escapes) do
+                    skin_name = skin_name:gsub(k, v)
+                end
+            else
                 armor_hover.debug("Cannot read skin name from meta file: %s", filename)
                 skin_name = file_prefix
             end
