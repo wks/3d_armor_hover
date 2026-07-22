@@ -74,12 +74,6 @@ When flying, it simply overrides the standing and walking animations.
 
 ## Differences from the original 3D Armor: Fly & Swim mod
 
-`3d_armor` is an required instead of optional dependencies.
-This is the first Luanti mod I made,
-and I currently don't want to maintain too many animations,
-such as one for MTG's default character model, one for `3d_armor`, one for `skinsdb`,
-those with capes from the skin, those with capes from the armor, etc.
-
 Capes are removed for multiple reasons.
 Firstly, I don't want to maintain multiple models for now.
 Secondly, capes can grant the "fly" privilege when wearing them, and revoke it when taking them off.
