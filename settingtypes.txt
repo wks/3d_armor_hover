@@ -13,11 +13,17 @@ fall_tv (Set terminal velocity speed - recommend not exceeding 150 kp/h) int 150
 #    Enable Swim Animation
 swim_anim (Enable swim animation) bool true
 
+#    Play Swim Animation even when not moving.
+#    By default (false), it will switch to the standing or hovering animation when the player is in water but not miving.
+#    If you want to take a screenshot of your character swimming, setting this to true will make it more convenient.
+swim_not_move (Swim animation when not moving) bool false
+
 #    Enable Climb Animation
 climb_anim (Enable climb animation) bool true
 
+#    When true, the "climb" animation will still be played when flying near climbables.
+#    When false, the animation selection algorithm completely ignore climbables when flying.
+climb_when_fly (Allow climbing when flying) bool false
+
 #    Enable Crouch/Duck Animation
 crouch_anim (Enable crouch/duck animation) bool true
-
-#    When true, the "climb" animation will still be played when flying near climbables.  When false, the animation selection algorithm completely ignore climbables when flying.
-climb_when_fly (Allow climbing when flying) bool false

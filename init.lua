@@ -30,6 +30,7 @@ local fall_tv        = tonumber(minetest.settings:get("fall_tv", true)) or 150
 -- Convert kp/h back to number of -y blocks per 0.05 of a second.
 fall_tv              = -1 * (fall_tv / 3.7)
 local swim_anim      = minetest.settings:get_bool("swim_anim", true)
+local swim_not_move  = minetest.settings:get_bool("swim_not_move", false)
 local climb_anim     = minetest.settings:get_bool("climb_anim", true)
 local crouch_anim    = minetest.settings:get_bool("crouch_anim", true)
 local climb_when_fly = minetest.settings:get_bool("climb_when_fly", false)
@@ -144,7 +145,7 @@ function armor_hover.global_step()
 
             -- Swim: top priority.
             if swim_anim and
-                controls_wasd
+                (swim_not_move or controls_wasd)
             then
                 -- See LocalPlayer::move in the Luanti source code `src/client/localplayer.cpp`
                 local function is_in_liquid(dy)
