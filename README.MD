@@ -37,36 +37,42 @@ You can use the `/3ah_gui` chat command to open a configuration window to custom
 There are two variants of hovering animations (`hover1` and `hover2`).
 Some player skins look better in one animation than the other.
 
-## Requirements and compatibility
+## Dependencies
 
-This mod currently requires the [Minetest Game].
-I also tested it on [Asuna].
-It should also work with other games based on the Minetest Game.
-It optionally requires the [3D Armor] (`3d_armor`) and the [SkinsDB] (`skinsdb`) mod.
+There is currently no hard dependencies, but this mod only works with the following supported games:
+
+-   [Minetest Game].
+    In theory, this mod should work on all games based on MTG,
+    but I only tested this mod with the following derived games:
+    -   [Asuna]
+-   [Backrooms Test]
+
+This mod works well with the following mods:
+
+-   [3D Armor]: for displaying armor and wielded items
+-   [SkinsDB]: for selecting skins
 
 I tested it on Luanti 5.16.1, but it should work with slightly older versions.
 
 [Minetest Game]: https://content.luanti.org/packages/Luanti/minetest_game/
 [Asuna]: https://content.luanti.org/packages/EmptyStar/asuna/
+[Backrooms Test]: https://content.luanti.org/packages/Sumianvoice/backroomtest/
 [3D Armor]: https://content.luanti.org/packages/stu/3d_armor/
 [SkinsDB]: https://content.luanti.org/packages/bell07/skinsdb/
 
-## Interactions with other mods
+## Skin selection
 
-### 3D Armor (`3d_armor`)
-
-The player model can display armors and wielded items when using the [3D Armor] mod.
-
-### SkinsDB (`skinsdb`)
-
-The player model is derived from the [SkinsDB] mod, and the skins can be selected using the SkinsDB mod.
+When the [SkinsDB] mod is installed, the player skin can be selected using SkinsDB.
 
 However, even if the SkinsDB mod is absent, this mod contains a few bundled skins for the players to use.
 They can be selected in the configuration GUI (open with the `/3ah_gui` command).
 
 ## How this mod works
 
-This mod overrides the "global step" function of Minetest Game's `player_api` and try to determine the player animation according to the player's pressed keys, mouse buttons, current velocity, adjacent objects, etc.
+This mod overrides the existing "global step" function of the games that determines the player animation.
+To support animations beyond the standard ones, such as standing, walking, mining, etc.,
+this mod makes decision based on the player's pressed keys, mouse buttons, current velocity, adjacent objects, etc.
+For example, if a player is moving in the water, it will play the swimming animation.
 
 It uses the same algorithm from the Luanti client, based on whether the player is in a liquid or climbable node, to determine if the player is swimming or climbing.
 It detectes whether the player is falling based on vertical velocity and the distance from solid nodes below.

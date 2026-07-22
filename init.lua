@@ -47,13 +47,14 @@ end
 -----------------------
 -- Conditional mods
 
-armor_hover.is_3d_armor   = minetest.get_modpath("3d_armor")
-armor_hover.is_skinsdb    = minetest.get_modpath("skinsdb")
-armor_hover.is_player_api = minetest.get_modpath("player_api")
+armor_hover.is_3d_armor        = minetest.get_modpath("3d_armor")
+armor_hover.is_skinsdb         = minetest.get_modpath("skinsdb")
+armor_hover.is_player_api      = minetest.get_modpath("player_api")
+armor_hover.is_br_player_model = minetest.get_modpath("br_player_model")
 
 ---------------------------------
 -- Volatile per-player storage
-local player_mstate       = {}
+local player_mstate            = {}
 
 ----------------------------
 -- Initiate files
@@ -117,10 +118,7 @@ function armor_hover.global_step()
         -- instead of checking the "fly" privilege?
         local fly           = privs.fly
 
-        -- The player has a `get_attach()` method,
-        -- but `player_api` also has a `player_attached` table that "conceptually" attaches the player.
-        -- They work independently.  Although mods often set both, but not always.
-        local attached_to   = player:get_attach() or player_api.player_attached[player_name]
+        local attached_to   = armor_hover.model_backend:is_attached(player)
 
         -- Sets terminal velocity to about 150Km/hr beyond
         -- this speed chunk load issues become more noticable
@@ -330,8 +328,9 @@ end
 -------------------------------------
 -- Load player model
 
-local player_mod, texture = armor_hover.get_player_model()
+local player_mod, blank_textures = armor_hover.get_player_model()
 armor_hover.player_mod = player_mod
+armor_hover.blank_textures = blank_textures
 
 -------------------------------------
 -- Initialize the model backend
@@ -344,13 +343,21 @@ armor_hover.model_backend:initialize()
 armor_hover.skin_backend:initialize()
 
 ----------------------------------------
--- Register player-join hook
+-- Register player-join/leave hooks
 
 minetest.register_on_joinplayer(function(player)
     armor_hover.model_backend:on_joinplayer(player)
     armor_hover.refresh_eye_offset(player)
     armor_hover.skin_backend:on_joinplayer(player)
 end)
+
+minetest.register_on_leaveplayer(function(player)
+    armor_hover.skin_backend:on_leaveplayer(player)
+    armor_hover.model_backend:on_leaveplayer(player)
+end)
+
+----------------------------------------
+-- Chat commands
 
 minetest.register_chatcommand("3ah_set_animation", {
     params = "<mstate> <chosen_animation>",

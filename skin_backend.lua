@@ -29,10 +29,11 @@ local skinsdb_backend = {
             old_apply_skin_to_player(self, player)
             armor_hover.debug("Force re-registering player mod: %s", armor_hover.player_mod)
             armor_hover.model_backend:reload_model(player)
-            armor_hover.refresh_eye_offset(player)
         end
     end,
-    on_joinplayer = function(player)
+    on_joinplayer = function(self, player)
+    end,
+    on_leaveplayer = function(self, player)
     end,
 }
 
@@ -160,6 +161,8 @@ local bundled_skins_backend = {
     end,
     on_joinplayer = function(self, player)
         self:apply_skin(player)
+    end,
+    on_leaveplayer = function(self, player)
     end,
     get_player_skin_index = function(self, player)
         local player_meta = player:get_meta()
