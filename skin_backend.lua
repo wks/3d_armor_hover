@@ -122,22 +122,33 @@ local bundled_skins_backend = {
         --------------------------------------
         -- Override 3D Armor behaviors
 
-        -- 3D Armor will update the textures when equipping/unequipping armors.
-        -- Since our model is different, we apply the textures differently.
-        armor.update_player_visuals = function(armor_self, player)
-            if not player then
-                return
+        if armor_hover.is_3d_armor then
+            -- 3D Armor will update the textures when equipping/unequipping armors.
+            -- Since our model is different, we apply the textures differently.
+            armor.update_player_visuals = function(armor_self, player)
+                if not player then
+                    return
+                end
+                self:apply_skin(player)
+                armor_self:run_callbacks("on_update", player)
             end
-            self:apply_skin(player)
-            armor_self:run_callbacks("on_update", player)
         end
     end,
     apply_skin = function(self, player)
         local player_name = player:get_player_name()
         local skin = self:get_player_skin(player)
         local skin_texture_file = skin.file_prefix .. ".png"
-        local armor_texture = armor.textures[player_name].armor or "blank.png"
-        local wielditem_texture = armor.textures[player_name].wielditem or "blank.png"
+        local armor_texture = "blank.png"
+        local wielditem_texture = "blank.png"
+
+        if armor_hover.is_3d_armor then
+            local armor_player_texture = armor.textures[player_name]
+            if armor_player_texture then
+                armor_texture = armor_player_texture.armor or armor_texture
+                wielditem_texture = armor_player_texture.wielditem or wielditem_texture
+            end
+        end
+
         armor_hover.debug("Applying textures. skin: [%s], armor: [%s], wield: [%s]",
             skin_texture_file, armor_texture, wielditem_texture)
         armor_hover.model_backend:set_textures(player, {

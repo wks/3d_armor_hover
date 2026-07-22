@@ -42,7 +42,7 @@ Some player skins look better in one animation than the other.
 This mod currently requires the [Minetest Game].
 I also tested it on [Asuna].
 It should also work with other games based on the Minetest Game.
-It requires the [3D Armor] (`3d_armor`) mod, and optionally depends on the [SkinsDB] (`skinsdb`) mod.
+It optionally requires the [3D Armor] (`3d_armor`) and the [SkinsDB] (`skinsdb`) mod.
 
 I tested it on Luanti 5.16.1, but it should work with slightly older versions.
 
@@ -53,9 +53,14 @@ I tested it on Luanti 5.16.1, but it should work with slightly older versions.
 
 ## Interactions with other mods
 
+### 3D Armor (`3d_armor`)
+
+The player model can display armors and wielded items when using the [3D Armor] mod.
+
 ### SkinsDB (`skinsdb`)
 
-The player model is derived from the SkinsDB mod, and the skins can be selected using the SkinsDB mod.
+The player model is derived from the [SkinsDB] mod, and the skins can be selected using the SkinsDB mod.
+
 However, even if the SkinsDB mod is absent, this mod contains a few bundled skins for the players to use.
 They can be selected in the configuration GUI (open with the `/3ah_gui` command).
 
