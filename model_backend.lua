@@ -131,6 +131,9 @@ local br_player_model_backend = {
         player:set_animation(animation, ani_spd, animation_blend, true)
         clear_local_animation(player)
     end,
+    get_animation_name = function(self, player)
+        return self.player_state[player:get_player_name()].animation_name
+    end,
     set_textures = function(self, player, textures)
         player:set_properties({ textures = textures })
     end,

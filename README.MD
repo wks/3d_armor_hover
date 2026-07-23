@@ -28,14 +28,31 @@ And the following player animations are taken from the original [3D Armor: Fly &
 
 ## How to use
 
+### Basic usage
+
 The swimming, climbing, falling and sneak-move animations will be used when the player is performing the respective actions.
+
 The flying and hovering animations are only applied to players with the "fly" privilege.
 The mod runs on the server side, but there is currently no way for the mod to detect if the client has enabled fly (freemove) mode or not.
 So this mod simply uses the "fly" privilege to detect if a player is flying.
+You can grant yourself "fly" privilege using the chat command `/grantme fly`, or via items from other mods, such as wings from [Aerial] or Flight Potion from [Ethereal].
+
+[Aerial]: https://content.luanti.org/packages/EmptyStar/aerial/
+[Ethereal]: https://content.luanti.org/packages/TenPlus1/ethereal/
+
+### Customize animations
 
 You can use the `/3ah_gui` chat command to open a configuration window to customize the flying animations.
 There are two variants of hovering animations (`hover1` and `hover2`).
 Some player skins look better in one animation than the other.
+
+### Emote
+
+You can use the `/3ah_emote` chat command to play special animations.
+Currently supported emotes include `lay`, `sit` and `swim`.
+For example, `/3ah_emote lay` will make your character lie down.
+Moving or clicking mouse button will cancel the current emote.
+A bug (feature?) is currently preventing the emote from being canceled when the player is "tied to" (e.g. in bed, on boat, on horse, etc.).
 
 ## Dependencies
 
@@ -86,8 +103,6 @@ Secondly, capes can grant the "fly" privilege when wearing them, and revoke it w
 But this mod is intended to be used in worlds where players always have the "fly" privilege.
 Having an item that can revoke the "fly" privilege may have unforeseen consequences.
 I am also not sure how it will interact with other mods, such as [Aerial], that grant the player the "fly" privilege.
-
-[Aerial]: https://content.luanti.org/packages/EmptyStar/aerial/
 
 The ability to sneak into a 1x1 square is removed.
 I think this ability modifies the game mechanism, and is orthogonal to this mod which modifies the player animation.

@@ -64,6 +64,7 @@ dofile(modpath .. "/model_backend.lua")
 dofile(modpath .. "/skin_backend.lua")
 dofile(modpath .. "/animations.lua")
 dofile(modpath .. "/gui.lua")
+dofile(modpath .. "/emote.lua")
 
 ------------------------------------------
 -- The behavior when a player stops flying
@@ -289,15 +290,25 @@ function armor_hover.global_step()
 
         local animation;
 
-        -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
-        if not attached_to then
+        -- Any movement or action will cancel the current emote.
+        if controls_wasd or controls_lrmb or controls.jump or controls.sneak then
+            armor_hover.emote:clear_emote(player)
+        end
+
+        local emote = armor_hover.emote.player_emote[player_name]
+        if emote then
+            -- The player is performing emote, and it has already set the animation.  Keep it.
+            animation = armor_hover.emote.emote_map[emote]
+        elseif attached_to then
+            -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
+            animation = armor_hover.model_backend:get_animation_name(player)
+        else
+            -- Determine the animation.
             local ani_spd;
             animation, ani_spd = determine_animation(mstate_transition)
             ani_spd = ani_spd or 30
 
             armor_hover.model_backend:set_animation(player, animation, ani_spd)
-        else
-            animation = armor_hover.model_backend:get_animation_name(player)
         end
 
         -- Regardless whether the player is attached, we update the cached base animation.
@@ -309,8 +320,15 @@ function armor_hover.global_step()
         if player.set_bone_override then
             local look_pitch = player:get_look_vertical()
 
-            if animation and armor_hover.animations[animation] and armor_hover.animations[animation].head_pitch then
-                look_pitch = look_pitch - armor_hover.animations[animation].head_pitch
+            -- There is a slight chance that if the player is attached to, we won't know its current animation name.
+            if animation then
+                local anim = armor_hover.animations[animation]
+                if anim.lock_head then
+                    look_pitch = 0;
+                end
+                if anim.head_pitch then
+                    look_pitch = look_pitch - anim.head_pitch
+                end
             end
 
             player:set_bone_override("Head", {
@@ -349,9 +367,11 @@ minetest.register_on_joinplayer(function(player)
     armor_hover.model_backend:on_joinplayer(player)
     armor_hover.refresh_eye_offset(player)
     armor_hover.skin_backend:on_joinplayer(player)
+    armor_hover.emote:on_joinplayer(player)
 end)
 
 minetest.register_on_leaveplayer(function(player)
+    armor_hover.emote:on_leaveplayer(player)
     armor_hover.skin_backend:on_leaveplayer(player)
     armor_hover.model_backend:on_leaveplayer(player)
 end)
@@ -436,6 +456,15 @@ minetest.register_chatcommand("3ah_gui", {
         armor_hover.debug("%s", formspec)
 
         minetest.show_formspec(name, "3d_armor_hover:config", formspec)
+    end
+})
+
+minetest.register_chatcommand("3ah_emote", {
+    params = "<" .. table.concat(table_to_keys(armor_hover.emote.emote_map), "|") .. ">",
+    description = "Perform custom actions",
+    func = function(name, param)
+        local player = core.get_player_by_name(name)
+        armor_hover.emote:set_emote(player, param)
     end
 })
 

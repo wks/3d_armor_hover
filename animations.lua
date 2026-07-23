@@ -37,7 +37,7 @@ end
 
 armor_hover.animations = {
     stand         = { x = 0, y = 79 },
-    lay           = { x = 162, y = 166 },
+    lay           = { x = 162, y = 166, lock_head = true },
     walk          = { x = 168, y = 187 },
     mine          = { x = 189, y = 198 },
     walk_mine     = { x = 200, y = 219 },
