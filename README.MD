@@ -4,7 +4,7 @@
 
 This mod adds hovering, flying, and some other new animations for the player model.
 It is a fork of the [3D Armor: Fly & Swim] mod by [sirrobzeroone].
-This mod is for players who like playing the Minetest Game in the fly (freemove) mode,
+This mod is for players who like playing in the fly (freemove) mode,
 and those who like the gentle floating feeling of flying or staying in the air.
 
 [3D Armor: Fly & Swim]: https://content.luanti.org/packages/sirrobzeroone/3d_armor_flyswim/
@@ -23,8 +23,8 @@ And the following player animations are taken from the original [3D Armor: Fly &
 -   `fall`: Falling down
 -   `fly_fast`: Superman-style fast flying
 
-![screenshot](screenshot.webp)
-![swim animation](swimming_animated.gif)
+![cover](screenshots/cover.webp)
+![BackroomTest animated](screenshots/screenshot-backroomtest-animated.webp)
 
 ## How to use
 
@@ -54,15 +54,23 @@ For example, `/3ah_emote lay` will make your character lie down.
 Moving or clicking mouse button will cancel the current emote.
 A bug (feature?) is currently preventing the emote from being canceled when the player is "tied to" (e.g. in bed, on boat, on horse, etc.).
 
+![Lying on the boat](screenshots/screenshot-emote-lay.webp)
+
 ## Dependencies
 
 There is currently no hard dependencies, but this mod only works with the following supported games:
 
--   [Minetest Game].
-    In theory, this mod should work on all games based on MTG,
-    but I only tested this mod with the following derived games:
-    -   [Asuna]
--   [Backrooms Test]
+**[Minetest Game]**: In theory, this mod should work on all games based on MTG, but I have only tested [Asuna] for now.
+
+![Screenshot of Minetest Game](screenshots/screenshot-mtg.webp)
+
+**[Asuna]**: a Minetest Game derivative.
+
+![Screenshot of Asuna](screenshots/screenshot-asuna.webp)
+
+**[Backrooms Test]**: Don't let the endless maze discourage you.  Try to float in the air and relax.
+
+![Screenshot of Backrooms Test](screenshots/screenshot-backroomtest.webp)
 
 This mod works well with the following mods:
 
@@ -98,11 +106,7 @@ When flying, it simply overrides the standing and walking animations.
 ## Differences from the original 3D Armor: Fly & Swim mod
 
 Capes are removed for multiple reasons.
-Firstly, I don't want to maintain multiple models for now.
-Secondly, capes can grant the "fly" privilege when wearing them, and revoke it when taking them off.
-But this mod is intended to be used in worlds where players always have the "fly" privilege.
-Having an item that can revoke the "fly" privilege may have unforeseen consequences.
-I am also not sure how it will interact with other mods, such as [Aerial], that grant the player the "fly" privilege.
+They are an experimental feature of the original [3D Armor: Fly & Swim], and I don't plan to include it for now.
 
 The ability to sneak into a 1x1 square is removed.
 I think this ability modifies the game mechanism, and is orthogonal to this mod which modifies the player animation.
