@@ -115,6 +115,7 @@ It could be supported by another mod.
 The algorithm to detemine whether the player is swimming or climbing is rewritten.
 
 The head animation is rewritten using the new API.
+This mod also lets the arm point to the looking direction when mining.
 
 ## Author and repository
 

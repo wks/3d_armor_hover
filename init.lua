@@ -331,8 +331,14 @@ function armor_hover.global_step()
                 end
             end
 
+            local arm_pitch = (controls_lrmb and not attached_to) and look_pitch or 0
+
             player:set_bone_override("Head", {
                 rotation = { vec = vector.new(look_pitch, 0, 0) }
+            })
+
+            player:set_bone_override("Arm_Right", {
+                rotation = { vec = vector.new(arm_pitch, 0, 0) }
             })
         end
 
