@@ -61,11 +61,11 @@ end
 -- Node above solid
 
 function armor_hover.node_above_solid(pos)
-    local node_check = minetest.get_node({ x = pos.x, y = pos.y + 1, z = pos.z })
+    local node_check = core.get_node({ x = pos.x, y = pos.y + 1, z = pos.z })
     local rtn = false
 
-    if minetest.registered_nodes[node_check.name] then
-        local nc_draw = minetest.registered_nodes[node_check.name].drawtype
+    if core.registered_nodes[node_check.name] then
+        local nc_draw = core.registered_nodes[node_check.name].drawtype
 
         if nc_draw ~= "liquid" and
             nc_draw ~= "flowingliquid" and
@@ -85,7 +85,7 @@ function armor_hover.get_node_down_drawtype(pos, num)
     local nodes = {}
     local result = {}
     while (i < num) do
-        table.insert(nodes, minetest.get_node({ x = pos.x, y = pos.y - i, z = pos.z }))
+        table.insert(nodes, core.get_node({ x = pos.x, y = pos.y - i, z = pos.z }))
         i = i + 1
     end
 
@@ -94,8 +94,8 @@ function armor_hover.get_node_down_drawtype(pos, num)
     for k, node in pairs(nodes) do
         local n_draw
 
-        if minetest.registered_nodes[node.name] then
-            n_draw = minetest.registered_nodes[node.name].drawtype
+        if core.registered_nodes[node.name] then
+            n_draw = core.registered_nodes[node.name].drawtype
         else
             n_draw = "normal"
         end
@@ -161,10 +161,10 @@ function crouch_wa(player, pos)
         pos_w = { x = pos.x + 1, y = pos.y + 1, z = pos.z }
     end
 
-    local check = minetest.get_node(pos_w)
+    local check = core.get_node(pos_w)
 
-    if minetest.registered_nodes[check.name] then
-        local check_g = minetest.get_item_group(check.name, "slab")
+    if core.registered_nodes[check.name] then
+        local check_g = core.get_item_group(check.name, "slab")
 
         if check_g ~= 0 then
             is_slab = 1

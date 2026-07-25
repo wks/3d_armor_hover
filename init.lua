@@ -20,20 +20,20 @@
 
 armor_hover          = {}
 
-local modname        = minetest.get_current_modname()
-local modpath        = minetest.get_modpath(modname)
+local modname        = core.get_current_modname()
+local modpath        = core.get_modpath(modname)
 
-local debug          = minetest.settings:get_bool("debug", false)
-local fly_anim       = minetest.settings:get_bool("fly_anim", true)
-local fall_anim      = minetest.settings:get_bool("fall_anim", true)
-local fall_tv        = tonumber(minetest.settings:get("fall_tv", true)) or 150
+local debug          = core.settings:get_bool("debug", false)
+local fly_anim       = core.settings:get_bool("fly_anim", true)
+local fall_anim      = core.settings:get_bool("fall_anim", true)
+local fall_tv        = tonumber(core.settings:get("fall_tv", true)) or 150
 -- Convert kp/h back to number of -y blocks per 0.05 of a second.
 fall_tv              = -1 * (fall_tv / 3.7)
-local swim_anim      = minetest.settings:get_bool("swim_anim", true)
-local swim_not_move  = minetest.settings:get_bool("swim_not_move", false)
-local climb_anim     = minetest.settings:get_bool("climb_anim", true)
-local crouch_anim    = minetest.settings:get_bool("crouch_anim", true)
-local climb_when_fly = minetest.settings:get_bool("climb_when_fly", false)
+local swim_anim      = core.settings:get_bool("swim_anim", true)
+local swim_not_move  = core.settings:get_bool("swim_not_move", false)
+local climb_anim     = core.settings:get_bool("climb_anim", true)
+local crouch_anim    = core.settings:get_bool("crouch_anim", true)
+local climb_when_fly = core.settings:get_bool("climb_when_fly", false)
 
 -----------------------
 -- Debugging
@@ -47,10 +47,10 @@ end
 -----------------------
 -- Conditional mods
 
-armor_hover.is_3d_armor        = minetest.get_modpath("3d_armor")
-armor_hover.is_skinsdb         = minetest.get_modpath("skinsdb")
-armor_hover.is_player_api      = minetest.get_modpath("player_api")
-armor_hover.is_br_player_model = minetest.get_modpath("br_player_model")
+armor_hover.is_3d_armor        = core.get_modpath("3d_armor")
+armor_hover.is_skinsdb         = core.get_modpath("skinsdb")
+armor_hover.is_player_api      = core.get_modpath("player_api")
+armor_hover.is_br_player_model = core.get_modpath("br_player_model")
 
 ---------------------------------
 -- Volatile per-player storage
@@ -100,9 +100,9 @@ end
 --          Crouching or Climbing             --
 ------------------------------------------------
 function armor_hover.global_step()
-    for _, player in pairs(minetest.get_connected_players()) do
+    for _, player in pairs(core.get_connected_players()) do
         local profile       = false
-        local start_time    = profile and minetest.get_us_time()
+        local start_time    = profile and core.get_us_time()
 
         local player_name   = player:get_player_name()
         local player_meta   = player:get_meta()
@@ -113,7 +113,7 @@ function armor_hover.global_step()
         local vel           = player:get_velocity()
         local speed         = vector.length(vel)
 
-        local privs         = minetest.get_player_privs(player:get_player_name())
+        local privs         = core.get_player_privs(player:get_player_name())
 
         -- Is there a way to detect if the player has enabled fly (freemove) mode
         -- instead of checking the "fly" privilege?
@@ -148,11 +148,11 @@ function armor_hover.global_step()
             then
                 -- See LocalPlayer::move in the Luanti source code `src/client/localplayer.cpp`
                 local function is_in_liquid(dy)
-                    local node = minetest.get_node_or_nil({ x = pos.x, y = pos.y + dy, z = pos.z })
+                    local node = core.get_node_or_nil({ x = pos.x, y = pos.y + dy, z = pos.z })
                     if not node then
                         return false
                     end
-                    local node_def = minetest.registered_nodes[node.name];
+                    local node_def = core.registered_nodes[node.name];
                     if not node_def then
                         return false
                     end
@@ -175,11 +175,11 @@ function armor_hover.global_step()
             then
                 -- See LocalPlayer::move in the Luanti source code `src/client/localplayer.cpp`
                 local function is_climbable(dy)
-                    local node = minetest.get_node_or_nil({ x = pos.x, y = pos.y + dy, z = pos.z })
+                    local node = core.get_node_or_nil({ x = pos.x, y = pos.y + dy, z = pos.z })
                     if not node then
                         return false
                     end
-                    local node_def = minetest.registered_nodes[node.name];
+                    local node_def = core.registered_nodes[node.name];
                     return node_def and node_def.climbable
                 end
 
@@ -343,8 +343,8 @@ function armor_hover.global_step()
         end
 
         if profile then
-            local end_time = minetest.get_us_time()
-            minetest.debug(dump(end_time - start_time))
+            local end_time = core.get_us_time()
+            core.debug(dump(end_time - start_time))
         end
     end
 end
@@ -369,14 +369,14 @@ armor_hover.skin_backend:initialize()
 ----------------------------------------
 -- Register player-join/leave hooks
 
-minetest.register_on_joinplayer(function(player)
+core.register_on_joinplayer(function(player)
     armor_hover.model_backend:on_joinplayer(player)
     armor_hover.refresh_eye_offset(player)
     armor_hover.skin_backend:on_joinplayer(player)
     armor_hover.emote:on_joinplayer(player)
 end)
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
     armor_hover.emote:on_leaveplayer(player)
     armor_hover.skin_backend:on_leaveplayer(player)
     armor_hover.model_backend:on_leaveplayer(player)
@@ -385,7 +385,7 @@ end)
 ----------------------------------------
 -- Chat commands
 
-minetest.register_chatcommand("3ah_set_animation", {
+core.register_chatcommand("3ah_set_animation", {
     params = "<mstate> <chosen_animation>",
     description = string.format("Set animation.  <mstate>: one of %s; <chosen_animation>: one of %s.",
         table.concat(armor_hover.mstate_list, ", "),
@@ -397,7 +397,7 @@ minetest.register_chatcommand("3ah_set_animation", {
     end
 })
 
-minetest.register_chatcommand("3ah_set_when_stop_fly", {
+core.register_chatcommand("3ah_set_when_stop_fly", {
     params = string.format("<%s>", table.concat(armor_hover.when_stop_fly_values, "|")),
     description = string.format("Set the behavior when a player stops flying."),
     func = function(name, param)
@@ -406,7 +406,7 @@ minetest.register_chatcommand("3ah_set_when_stop_fly", {
     end
 })
 
-minetest.register_chatcommand("3ah_get_eye_offset", {
+core.register_chatcommand("3ah_get_eye_offset", {
     description = string.format("Get the player's third person back eye offset."),
     func = function(name, param)
         local player = core.get_player_by_name(name)
@@ -415,7 +415,7 @@ minetest.register_chatcommand("3ah_get_eye_offset", {
     end
 })
 
-minetest.register_chatcommand("3ah_set_eye_offset", {
+core.register_chatcommand("3ah_set_eye_offset", {
     params = "(x, y, z)",
     description = string.format("Set the player's third person back eye offset."),
     func = function(name, param)
@@ -431,7 +431,7 @@ minetest.register_chatcommand("3ah_set_eye_offset", {
 })
 
 if armor_hover.skin_backend.name == "bundled_skins" then
-    minetest.register_chatcommand("3ah_list_skins", {
+    core.register_chatcommand("3ah_list_skins", {
         description = string.format("Print a list of available skins."),
         func = function(name, param)
             local player = core.get_player_by_name(name)
@@ -444,7 +444,7 @@ if armor_hover.skin_backend.name == "bundled_skins" then
         end
     })
 
-    minetest.register_chatcommand("3ah_set_skin", {
+    core.register_chatcommand("3ah_set_skin", {
         params = "<skin_index>",
         description = string.format("Set the player's skin."),
         func = function(name, param)
@@ -455,17 +455,17 @@ if armor_hover.skin_backend.name == "bundled_skins" then
     })
 end
 
-minetest.register_chatcommand("3ah_gui", {
+core.register_chatcommand("3ah_gui", {
     description = "Open GUI to set animations",
     func = function(name)
         local formspec = armor_hover.get_config_formspec(name)
         armor_hover.debug("%s", formspec)
 
-        minetest.show_formspec(name, "3d_armor_hover:config", formspec)
+        core.show_formspec(name, "3d_armor_hover:config", formspec)
     end
 })
 
-minetest.register_chatcommand("3ah_emote", {
+core.register_chatcommand("3ah_emote", {
     params = "<" .. table.concat(table_to_keys(armor_hover.emote.emote_map), "|") .. ">",
     description = "Perform custom actions",
     func = function(name, param)
@@ -478,7 +478,7 @@ local function refresh_gui(player)
     local name = player:get_player_name()
     local formspec = armor_hover.get_config_formspec(name)
     armor_hover.debug("%s", formspec)
-    minetest.show_formspec(name, "3d_armor_hover:config", formspec)
+    core.show_formspec(name, "3d_armor_hover:config", formspec)
 end
 
 core.register_on_player_receive_fields(function(player, formname, fields)
