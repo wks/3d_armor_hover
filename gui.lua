@@ -255,13 +255,13 @@ function armor_hover.get_config_formspec(player_name)
 
     -- Animation configurations
     do
-        local options = armor_hover.configurable_animations
+        local options = armor_hover.configurable_anim_names
         local options_string = table.concat(options, ",")
 
         for _, mstate in ipairs(armor_hover.mstate_list) do
             local mstate_map = armor_hover.mstates[mstate]
-            local chosen_animation = armor_hover.get_chosen_animation(player, mstate)
-            local chosen_index = list_find(options, chosen_animation) or 1
+            local chosen_anim_name = armor_hover.get_chosen_anim_name(player, mstate)
+            local chosen_index = list_find(options, chosen_anim_name) or 1
 
             local label_text = string.format("%s animation:", mstate_map.description)
             label_widget_buttons(label_text, nil, "reset_selector_" .. mstate, function(bcl)
@@ -321,19 +321,19 @@ Positive dx moves to the right; positive dy moves to the top; and positive dz mo
         local prop = player:get_properties()
         local mesh = prop.mesh
         local textures = table.concat(prop.textures, ",")
-        local function add_preview(index, anim)
-            local animation = armor_hover.animations[anim]
-            armor_hover.debug(anim, animation.x, animation.y)
+        local function add_preview(index, anim_name)
+            local anim = armor_hover.animations[anim_name]
+            armor_hover.debug(anim_name, anim.x, anim.y)
             local vlayout2 = linear_layout(false, 0, 0, hlayout:get(1, index))
-            b:add_format("label[%s;%s]", xy_wh(vlayout2:add(style.label_height)), core.formspec_escape(anim))
+            b:add_format("label[%s;%s]", xy_wh(vlayout2:add(style.label_height)), core.formspec_escape(anim_name))
             b:add_format("model[%s;preview_%s;%s;%s;0,180;false;true;%d,%d;30]",
                 xy_wh(vlayout2:rest()),
-                core.formspec_escape(anim),
+                core.formspec_escape(anim_name),
                 mesh,
                 textures,
-                1000 or animation.x,
-                2000 or animation.y,
-                animation.animation_speed or 30
+                1000 or anim.x,
+                2000 or anim.y,
+                anim.animation_speed or 30
             )
         end
 

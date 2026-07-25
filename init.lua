@@ -215,8 +215,8 @@ function armor_hover.global_step()
                     return "fall" .. mine_suffix
                 end
 
-                local function chosen_anim(mstate)
-                    return armor_hover.get_chosen_animation(player, mstate)
+                local function chosen_anim_name(mstate)
+                    return armor_hover.get_chosen_anim_name(player, mstate)
                 end
 
                 -- Use the "Superman fly" animation only when flying fast enough.
@@ -224,7 +224,7 @@ function armor_hover.global_step()
                 if speed > 18.0 and
                     controls_wasd
                 then
-                    return chosen_anim("fast_flying") .. mine_suffix
+                    return chosen_anim_name("fast_flying") .. mine_suffix
                 end
 
                 -- TODO: Add more flying animations
@@ -234,7 +234,7 @@ function armor_hover.global_step()
                     -- the player will not move, but will switch to slow_fly_anim.
                     -- This is intentional.
                     mstate_transition.new = "slow_flying"
-                    return chosen_anim("slow_flying") .. mine_suffix
+                    return chosen_anim_name("slow_flying") .. mine_suffix
                 end
 
                 if controls.jump or controls.sneak then
@@ -242,7 +242,7 @@ function armor_hover.global_step()
                     -- the player will not move, but will switch to hover_anim.
                     -- This is intentional.
                     mstate_transition.new = "hovering"
-                    return chosen_anim("hovering") .. mine_suffix
+                    return chosen_anim_name("hovering") .. mine_suffix
                 end
 
                 local when_stop_fly = armor_hover.get_when_stop_fly(player)
@@ -250,13 +250,13 @@ function armor_hover.global_step()
                 if when_stop_fly == "keep" then
                     mstate_transition.new = mstate_transition.old
                     if mstate_transition.old == "slow_flying" then
-                        return chosen_anim("slow_flying") .. mine_suffix
+                        return chosen_anim_name("slow_flying") .. mine_suffix
                     else
-                        return chosen_anim("hovering") .. mine_suffix
+                        return chosen_anim_name("hovering") .. mine_suffix
                     end
                 else
                     mstate_transition.new = "hovering"
-                    return chosen_anim("hovering") .. mine_suffix
+                    return chosen_anim_name("hovering") .. mine_suffix
                 end
             else
                 -- Fall
@@ -288,7 +288,7 @@ function armor_hover.global_step()
             old = player_mstate[player_name],
         }
 
-        local animation;
+        local anim_name;
 
         -- Any movement or action will cancel the current emote.
         if controls_wasd or controls_lrmb or controls.jump or controls.sneak then
@@ -298,20 +298,20 @@ function armor_hover.global_step()
         local emote = armor_hover.emote.player_emote[player_name]
         if emote then
             -- The player is performing emote, and it has already set the animation.  Keep it.
-            animation = armor_hover.emote.emote_map[emote]
+            anim_name = armor_hover.emote.emote_map[emote]
         elseif attached_to then
             -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
-            animation = armor_hover.model_backend:get_animation_name(player)
+            anim_name = armor_hover.model_backend:get_animation_name(player)
         else
             -- Determine the animation.
             local ani_spd;
-            animation, ani_spd = determine_animation(mstate_transition)
+            anim_name, ani_spd = determine_animation(mstate_transition)
             ani_spd = ani_spd or 30
 
-            armor_hover.model_backend:set_animation(player, animation, ani_spd)
+            armor_hover.model_backend:set_animation(player, anim_name, ani_spd)
         end
 
-        -- Regardless whether the player is attached, we update the cached base animation.
+        -- Regardless whether the player is attached, we update the cached mstate.
         player_mstate[player_name] = mstate_transition.new
 
         -- Head Animation
@@ -321,12 +321,11 @@ function armor_hover.global_step()
             local look_pitch = player:get_look_vertical()
 
             -- There is a slight chance that if the player is attached to, we won't know its current animation name.
-            if animation then
-                local anim = armor_hover.animations[animation]
+            if anim_name then
+                local anim = armor_hover.animations[anim_name]
                 if anim.lock_head then
                     look_pitch = 0;
-                end
-                if anim.head_pitch then
+                elseif anim.head_pitch then
                     look_pitch = look_pitch - anim.head_pitch
                 end
             end
@@ -386,14 +385,14 @@ end)
 -- Chat commands
 
 core.register_chatcommand("3ah_set_animation", {
-    params = "<mstate> <chosen_animation>",
-    description = string.format("Set animation.  <mstate>: one of %s; <chosen_animation>: one of %s.",
+    params = "<mstate> <chosen_anim_name>",
+    description = string.format("Set animation.  <mstate>: one of %s; <chosen_anim_name>: one of %s.",
         table.concat(armor_hover.mstate_list, ", "),
-        table.concat(armor_hover.configurable_animations, ", ")),
+        table.concat(armor_hover.configurable_anim_names, ", ")),
     func = function(name, param)
         local params = string.split(param, " ")
         local player = core.get_player_by_name(name)
-        armor_hover.set_chosen_animation(player, params[1], params[2])
+        armor_hover.set_chosen_anim_name(player, params[1], params[2])
     end
 })
 
@@ -506,7 +505,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     for mstate, _ in pairs(armor_hover.mstates) do
         if fields["reset_selector_" .. mstate] then
             armor_hover.debug("Resetting chosen animation of %s", mstate)
-            armor_hover.clear_chosen_animation(player, mstate)
+            armor_hover.clear_chosen_anim_name(player, mstate)
             refresh_gui(player)
             return
         end
@@ -558,10 +557,10 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     for mstate, _ in pairs(armor_hover.mstates) do
-        local chosen_animation = fields["selector_" .. mstate]
-        if chosen_animation then
-            armor_hover.debug("Setting chosen animation of %s to %s", mstate, chosen_animation)
-            armor_hover.set_chosen_animation(player, mstate, chosen_animation)
+        local chosen_anim_name = fields["selector_" .. mstate]
+        if chosen_anim_name then
+            armor_hover.debug("Setting chosen animation of %s to %s", mstate, chosen_anim_name)
+            armor_hover.set_chosen_anim_name(player, mstate, chosen_anim_name)
             refresh_gui(player)
             return
         end

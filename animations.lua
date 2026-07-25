@@ -72,10 +72,10 @@ armor_hover.mstates = {}
 -- config GUIs.
 armor_hover.mstate_list = {}
 
-local function make_mstate(name, description, default_animation)
+local function make_mstate(name, description, default_anim_name)
     armor_hover.mstates[name] = {
         description = description,
-        default_animation = default_animation,
+        default_anim_name = default_anim_name,
     }
     table.insert(armor_hover.mstate_list, name)
 end
@@ -87,32 +87,32 @@ make_mstate("fast_flying", "Fast Flying", "fly_fast")
 -----------------------------------------
 -- Animation configurations
 
-armor_hover.configurable_animations = { "hover1", "hover2", "fly_slow", "fly_fast" }
+armor_hover.configurable_anim_names = { "hover1", "hover2", "fly_slow", "fly_fast" }
 
 -- Get the player's chosen animation, fall back to the default animation.
-function armor_hover.get_chosen_animation(player, mstate)
+function armor_hover.get_chosen_anim_name(player, mstate)
     local meta = player:get_meta()
-    return meta:get("3d_armor_hover:chosen_anim_" .. mstate) or armor_hover.mstates[mstate].default_animation
+    return meta:get("3d_armor_hover:chosen_anim_" .. mstate) or armor_hover.mstates[mstate].default_anim_name
 end
 
 -- Set the player's chosen animation.
-function armor_hover.set_chosen_animation(player, mstate, chosen_animation)
-    if not armor_hover.mstates[mstate].default_animation then
+function armor_hover.set_chosen_anim_name(player, mstate, chosen_anim_name)
+    if not armor_hover.mstates[mstate].default_anim_name then
         core.chat_send_player(player:get_player_name(), "Invalid mstate: " .. tostring(mstate))
         return
     end
-    if not list_find(armor_hover.configurable_animations, chosen_animation) then
+    if not list_find(armor_hover.configurable_anim_names, chosen_anim_name) then
         core.chat_send_player(player:get_player_name(),
-            string.format("Can't configure mstate '%s' to animation '%s'.", mstate, chosen_animation))
+            string.format("Can't configure mstate '%s' to animation '%s'.", mstate, chosen_anim_name))
         return
     end
 
     local meta = player:get_meta()
-    meta:set_string("3d_armor_hover:chosen_anim_" .. mstate, chosen_animation)
+    meta:set_string("3d_armor_hover:chosen_anim_" .. mstate, chosen_anim_name)
 end
 
 -- Clear the player's chosen animation.  The next "get_" call will get the default value.
-function armor_hover.clear_chosen_animation(player, mstate)
+function armor_hover.clear_chosen_anim_name(player, mstate)
     local meta = player:get_meta()
     meta:set_string("3d_armor_hover:chosen_anim_" .. mstate, "")
 end
