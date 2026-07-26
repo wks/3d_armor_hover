@@ -276,10 +276,10 @@ function armor_hover.get_config_formspec(player_name)
 
     -- When-stop-fly behavior
     do
-        local options = armor_hover.when_stop_fly_values
+        local options = armor_hover.player_configs.when_stop_fly.possible_values
         local options_string = table.concat(options, ",")
 
-        local cur_value = armor_hover.get_when_stop_fly(player)
+        local cur_value = armor_hover.player_configs.when_stop_fly:get(player)
         local index = list_find(options, cur_value)
 
         local label_text = "When stop moving during flight..."

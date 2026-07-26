@@ -60,39 +60,12 @@ local player_mstate            = {}
 -- Initiate files
 
 dofile(modpath .. "/i_functions.lua")
+dofile(modpath .. "/config.lua")
 dofile(modpath .. "/model_backend.lua")
 dofile(modpath .. "/skin_backend.lua")
 dofile(modpath .. "/animations.lua")
 dofile(modpath .. "/gui.lua")
 dofile(modpath .. "/emote.lua")
-
-------------------------------------------
--- The behavior when a player stops flying
-
-armor_hover.when_stop_fly_values = { "keep", "hover" }
-armor_hover.is_valid_when_stop_fly_value = list_to_set(armor_hover.when_stop_fly_values)
-armor_hover.when_stop_fly_default = "keep"
-
-function armor_hover.get_when_stop_fly(player)
-    local meta = player:get_meta()
-    return meta:get("3d_armor_hover:when_stop_fly") or armor_hover.when_stop_fly_default
-end
-
-function armor_hover.set_when_stop_fly(player, new_value)
-    if not armor_hover.is_valid_when_stop_fly_value[new_value] then
-        core.chat_send_player(player:get_player_name(), "Invalid value: " .. tostring(new_value))
-        return
-    end
-
-    local meta = player:get_meta()
-    return meta:set_string("3d_armor_hover:when_stop_fly", new_value)
-end
-
--- Clear the when-stop-flying behavior.  The next "get_" will get the default value.
-function armor_hover.clear_when_stop_fly(player)
-    local meta = player:get_meta()
-    return meta:set_string("3d_armor_hover:when_stop_fly", "")
-end
 
 ------------------------------------------------
 --    Global step to check if player meets    --
@@ -245,7 +218,7 @@ function armor_hover.global_step()
                     return chosen_anim_name("hovering") .. mine_suffix
                 end
 
-                local when_stop_fly = armor_hover.get_when_stop_fly(player)
+                local when_stop_fly = armor_hover.player_configs.when_stop_fly:get(player)
 
                 if when_stop_fly == "keep" then
                     mstate_transition.new = mstate_transition.old
@@ -397,11 +370,14 @@ core.register_chatcommand("3ah_set_animation", {
 })
 
 core.register_chatcommand("3ah_set_when_stop_fly", {
-    params = string.format("<%s>", table.concat(armor_hover.when_stop_fly_values, "|")),
+    params = string.format("<%s>", table.concat(armor_hover.player_configs.when_stop_fly.possible_values, "|")),
     description = string.format("Set the behavior when a player stops flying."),
     func = function(name, param)
         local player = core.get_player_by_name(name)
-        armor_hover.set_when_stop_fly(player, param)
+        local succ, msg = armor_hover.player_configs.when_stop_fly:set(player, param)
+        if not succ then
+            core.chat_send_player(player:get_player_name(), msg)
+        end
     end
 })
 
@@ -512,7 +488,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     if fields.reset_when_stop_fly then
-        armor_hover.clear_when_stop_fly(player)
+        armor_hover.player_configs.when_stop_fly:clear(player)
         refresh_gui(player)
         return
     end
@@ -567,7 +543,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
     end
 
     if fields.when_stop_fly then
-        armor_hover.set_when_stop_fly(player, fields.when_stop_fly)
+        armor_hover.player_configs.when_stop_fly:set(player, fields.when_stop_fly)
         refresh_gui(player)
         return
     end
