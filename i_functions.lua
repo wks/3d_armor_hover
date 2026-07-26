@@ -136,47 +136,8 @@ function armor_hover.node_down_check(nodes, num, type)
     end
 end
 
-------------------------------------------
--- Workaround for slab edge crouch
-
-function crouch_wa(player, pos)
-    local is_slab = 0
-    local pos_w = {}
-    local angle = (player:get_look_horizontal()) * 180 / math.pi -- Convert Look direction to angles
-
-    -- +Z North
-    if angle <= 45 or angle >= 315 then
-        pos_w = { x = pos.x, y = pos.y + 1, z = pos.z + 1 }
-
-        -- -X West
-    elseif angle > 45 and angle < 135 then
-        pos_w = { x = pos.x - 1, y = pos.y + 1, z = pos.z }
-
-        -- -Z South
-    elseif angle >= 135 and angle <= 225 then
-        pos_w = { x = pos.x, y = pos.y + 1, z = pos.z - 1 }
-
-        -- +X East
-    elseif angle > 225 and angle < 315 then
-        pos_w = { x = pos.x + 1, y = pos.y + 1, z = pos.z }
-    end
-
-    local check = core.get_node(pos_w)
-
-    if core.registered_nodes[check.name] then
-        local check_g = core.get_item_group(check.name, "slab")
-
-        if check_g ~= 0 then
-            is_slab = 1
-        end
-    end
-
-    -- return 1 or 0, need to update to bool
-    return is_slab
-end
-
 -- Convert a linear list to a set
-function list_to_set(tab)
+function armor_hover.list_to_set(tab)
     local result = {}
     for _, v in ipairs(tab) do
         result[v] = true
@@ -186,7 +147,7 @@ function list_to_set(tab)
 end
 
 -- Linearly search a list for a value.  Return the index.
-function list_find(tab, elem)
+function armor_hover.list_find(tab, elem)
     for i, v in ipairs(tab) do
         if v == elem then
             return i
@@ -196,7 +157,7 @@ function list_find(tab, elem)
 end
 
 -- Convert a table to a list of keys.
-function table_to_keys(tab)
+function armor_hover.table_to_keys(tab)
     local result = {}
     for k, _ in pairs(tab) do
         table.insert(result, k)

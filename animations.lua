@@ -101,7 +101,7 @@ function armor_hover.set_chosen_anim_name(player, mstate, chosen_anim_name)
         core.chat_send_player(player:get_player_name(), "Invalid mstate: " .. tostring(mstate))
         return
     end
-    if not list_find(armor_hover.configurable_anim_names, chosen_anim_name) then
+    if not armor_hover.list_find(armor_hover.configurable_anim_names, chosen_anim_name) then
         core.chat_send_player(player:get_player_name(),
             string.format("Can't configure mstate '%s' to animation '%s'.", mstate, chosen_anim_name))
         return

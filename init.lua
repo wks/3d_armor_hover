@@ -441,7 +441,7 @@ core.register_chatcommand("3ah_gui", {
 })
 
 core.register_chatcommand("3ah_emote", {
-    params = "<" .. table.concat(table_to_keys(armor_hover.emote.emote_map), "|") .. ">",
+    params = "<" .. table.concat(armor_hover.table_to_keys(armor_hover.emote.emote_map), "|") .. ">",
     description = "Perform custom actions",
     func = function(name, param)
         local player = core.get_player_by_name(name)

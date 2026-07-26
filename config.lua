@@ -37,14 +37,7 @@ local function default_validate(def, player, val)
     elseif def.kind == "float_nz" then
         return type(val) == "number"
     elseif def.kind == "str_enum" then
-        local val_type = type(val)
-        armor_hover.debug("  val_type: %s", val_type)
-        if val_type ~= "string" then return false end
-        local list_index = list_find(def.possible_values, val)
-        armor_hover.debug("  list_index: %d", list_index)
-        if not list_index then return false end
-        return true
-        -- return type(val) == "string" and list_find(def.possible_values, val)
+        return type(val) == "string" and armor_hover.list_find(def.possible_values, val)
     elseif def.kind == "vec" then
         return type(val) == "table"
     else
@@ -104,13 +97,9 @@ local function set(def, player, val)
 end
 
 local function get(def, player)
-    armor_hover.debug("Get %s", def.name)
-
     local val = def:load(player)
-    armor_hover.debug("  Val: %s", tostring(val))
 
     if not val then
-        armor_hover.debug("  Val is falsey.  Getting default...")
         return def:get_default(player)
     end
 
@@ -119,11 +108,8 @@ local function get(def, player)
     -- and values from previous builds may become invalid.
     -- We validate anyway.
     if not def:validate(player, val) then
-        armor_hover.debug("  Val is invalid.  Getting default...")
         return def:get_default(player)
     end
-
-    armor_hover.debug("  Val is valid.  returning...")
 
     return val
 end

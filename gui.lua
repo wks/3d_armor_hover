@@ -261,7 +261,7 @@ function armor_hover.get_config_formspec(player_name)
         for _, mstate in ipairs(armor_hover.mstate_list) do
             local mstate_map = armor_hover.mstates[mstate]
             local chosen_anim_name = armor_hover.get_chosen_anim_name(player, mstate)
-            local chosen_index = list_find(options, chosen_anim_name) or 1
+            local chosen_index = armor_hover.list_find(options, chosen_anim_name) or 1
 
             local label_text = string.format("%s animation:", mstate_map.description)
             label_widget_buttons(label_text, nil, "reset_selector_" .. mstate, function(bcl)
@@ -280,7 +280,7 @@ function armor_hover.get_config_formspec(player_name)
         local options_string = table.concat(options, ",")
 
         local cur_value = armor_hover.player_configs.when_stop_fly:get(player)
-        local index = list_find(options, cur_value)
+        local index = armor_hover.list_find(options, cur_value)
 
         local label_text = "When stop moving during flight..."
         local info = [[
