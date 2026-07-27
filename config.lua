@@ -76,7 +76,9 @@ local function default_load(def, player)
     elseif def.kind == "str_enum" then
         return meta:get(key)
     elseif def.kind == "vec" then
-        return vector.from_string(meta:get(key))
+        local str = meta:get(key)
+        if not str then return nil end
+        return vector.from_string(str)
     else
         error(string.format("Unknown kind '%s'", def.kind))
     end
@@ -151,12 +153,4 @@ function armor_hover.new_player_option(provided_def)
     return def
 end
 
-armor_hover.player_configs = {
-    when_stop_fly = armor_hover.new_player_option({
-        name = "when_stop_fly",
-        description = "The behavior when a player stops flying",
-        kind = "str_enum",
-        get_default = function() return "keep" end,
-        possible_values = { "keep", "hover" },
-    }),
-}
+armor_hover.player_configs = {}

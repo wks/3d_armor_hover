@@ -61,9 +61,9 @@ local player_mstate            = {}
 
 dofile(modpath .. "/i_functions.lua")
 dofile(modpath .. "/config.lua")
+dofile(modpath .. "/animations.lua")
 dofile(modpath .. "/model_backend.lua")
 dofile(modpath .. "/skin_backend.lua")
-dofile(modpath .. "/animations.lua")
 dofile(modpath .. "/gui.lua")
 dofile(modpath .. "/emote.lua")
 
@@ -385,7 +385,7 @@ core.register_chatcommand("3ah_get_eye_offset", {
     description = string.format("Get the player's third person back eye offset."),
     func = function(name, param)
         local player = core.get_player_by_name(name)
-        local eye_offset = armor_hover.get_player_eye_offset(player)
+        local eye_offset = armor_hover.player_configs.eye_offset:get(player)
         core.chat_send_player(player:get_player_name(), "Eye offset: " .. tostring(eye_offset))
     end
 })
@@ -400,7 +400,7 @@ core.register_chatcommand("3ah_set_eye_offset", {
             core.chat_send_player(player:get_player_name(), "Invalid eye offset: " .. param)
             return
         end
-        armor_hover.set_player_eye_offset(player, eye_offset)
+        armor_hover.player_configs.eye_offset:set(player, eye_offset)
         armor_hover.refresh_eye_offset(player)
     end
 })
@@ -495,7 +495,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 
     if fields.reset_eye_offset then
         armor_hover.debug("Clearing eye offset")
-        armor_hover.clear_player_eye_offset(player)
+        armor_hover.player_configs.eye_offset:clear(player)
         armor_hover.refresh_eye_offset(player)
         refresh_gui(player)
         return
@@ -509,7 +509,7 @@ core.register_on_player_receive_fields(function(player, formname, fields)
         local eye_offset = vector.from_string(fields.eye_offset)
         if eye_offset then
             armor_hover.debug("Set eye offset.")
-            armor_hover.set_player_eye_offset(player, eye_offset)
+            armor_hover.player_configs.eye_offset:set(player, eye_offset)
             armor_hover.refresh_eye_offset(player)
         else
             armor_hover.debug("Invalid eye offset.")

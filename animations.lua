@@ -118,31 +118,30 @@ function armor_hover.clear_chosen_anim_name(player, mstate)
 end
 
 -----------------------------------------
--- Eye offset configurations
+-- Eye offset configuration
 
 armor_hover.default_eye_offset = vector.new(4, 2, 2)
 
--- Get the player's eye offset, fall back to the default offset
-function armor_hover.get_player_eye_offset(player)
-    local meta = player:get_meta()
-    local eye_offset_string = meta:get("3d_armor_hover:eye_offset")
-    return eye_offset_string and vector.from_string(eye_offset_string) or armor_hover.default_eye_offset
-end
-
--- Set the player's chosen animation.
-function armor_hover.set_player_eye_offset(player, offset)
-    local meta = player:get_meta()
-    meta:set_string("3d_armor_hover:eye_offset", vector.to_string(offset))
-end
-
--- Clear the player's chosen animation.  The next "get_" call will get the default value.
-function armor_hover.clear_player_eye_offset(player)
-    local meta = player:get_meta()
-    meta:set_string("3d_armor_hover:eye_offset", "")
-end
+armor_hover.player_configs.eye_offset = armor_hover.new_player_option({
+    name = "eye_offset",
+    description = "Camera offset vector",
+    kind = "vec",
+    get_default = function() return armor_hover.default_eye_offset end,
+})
 
 -- Refresh a player's eye offset when settings changed.
 function armor_hover.refresh_eye_offset(player)
-    local eye_offset = armor_hover.get_player_eye_offset(player)
+    local eye_offset = armor_hover.player_configs.eye_offset:get(player)
     player:set_eye_offset(vector.zero(), eye_offset, vector.zero())
 end
+
+-----------------------------------------
+-- Stop-flying behavior configuration
+
+armor_hover.player_configs.when_stop_fly = armor_hover.new_player_option({
+    name = "when_stop_fly",
+    description = "The behavior when a player stops flying",
+    kind = "str_enum",
+    get_default = function() return "keep" end,
+    possible_values = { "keep", "hover" },
+})

@@ -164,3 +164,8 @@ function armor_hover.table_to_keys(tab)
     end
     return result
 end
+
+-- Make a function that always returns a given value.
+function armor_hover.const_func(value)
+    return function() return value end
+end

@@ -297,7 +297,7 @@ hover: Switch to hovering animation]]
 
     -- Eye offset
     do
-        local eye_offset = armor_hover.get_player_eye_offset(player)
+        local eye_offset = armor_hover.player_configs.eye_offset:get(player)
 
         local label_text = "3rd person rear view eye offset:"
         local info = [[
