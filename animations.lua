@@ -84,37 +84,54 @@ make_mstate("hovering", "Hovering", "hover1")
 make_mstate("slow_flying", "Slow Flying", "fly_slow")
 make_mstate("fast_flying", "Fast Flying", "fly_fast")
 
------------------------------------------
--- Animation configurations
+-----------------------------------------------
+-- Mstate-to-animation mapping configurations
 
 armor_hover.configurable_anim_names = { "hover1", "hover2", "fly_slow", "fly_fast" }
 
+armor_hover.player_configs.mstate_mapping = {}
+for mstate, mstate_map in pairs(armor_hover.mstates) do
+    armor_hover.player_configs.mstate_mapping[mstate] = armor_hover.new_player_option({
+        name = "chosen_anim_" .. mstate,
+        description = string.format("Chosen animation name for the mstate '%s'", mstate),
+        kind = "str_enum",
+        get_default = function() return mstate_map.default_anim_name end,
+        possible_values = armor_hover.configurable_anim_names,
+    })
+end
+
 -- Get the player's chosen animation, fall back to the default animation.
 function armor_hover.get_chosen_anim_name(player, mstate)
-    local meta = player:get_meta()
-    return meta:get("3d_armor_hover:chosen_anim_" .. mstate) or armor_hover.mstates[mstate].default_anim_name
+    -- Currently mstate is always selected by the server-side script,
+    -- and we don't store the current mstate in metadata storage so it can't be from older builds.
+    -- If it is invalid, it is a bug.
+    if not armor_hover.mstates[mstate] then
+        error("Invalid mstate: " .. tostring(mstate))
+    end
+
+    return armor_hover.player_configs.mstate_mapping[mstate]:get(player)
 end
 
 -- Set the player's chosen animation.
 function armor_hover.set_chosen_anim_name(player, mstate, chosen_anim_name)
-    if not armor_hover.mstates[mstate].default_anim_name then
+    -- mstate may be sent from the client.  Validate it.
+    if not armor_hover.mstates[mstate] then
         core.chat_send_player(player:get_player_name(), "Invalid mstate: " .. tostring(mstate))
         return
     end
-    if not armor_hover.list_find(armor_hover.configurable_anim_names, chosen_anim_name) then
-        core.chat_send_player(player:get_player_name(),
-            string.format("Can't configure mstate '%s' to animation '%s'.", mstate, chosen_anim_name))
-        return
-    end
 
-    local meta = player:get_meta()
-    meta:set_string("3d_armor_hover:chosen_anim_" .. mstate, chosen_anim_name)
+    return armor_hover.player_configs.mstate_mapping[mstate]:set(player, chosen_anim_name)
 end
 
 -- Clear the player's chosen animation.  The next "get_" call will get the default value.
 function armor_hover.clear_chosen_anim_name(player, mstate)
-    local meta = player:get_meta()
-    meta:set_string("3d_armor_hover:chosen_anim_" .. mstate, "")
+    -- mstate may be sent from the client.  Validate it.
+    if not armor_hover.mstates[mstate] then
+        core.chat_send_player(player:get_player_name(), "Invalid mstate: " .. tostring(mstate))
+        return
+    end
+
+    return armor_hover.player_configs.mstate_mapping[mstate]:clear(player)
 end
 
 -----------------------------------------
