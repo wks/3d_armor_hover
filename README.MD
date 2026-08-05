@@ -12,8 +12,9 @@ and those who like the gentle floating feeling of flying or staying in the air.
 
 The following player animations and their mining/attacking variants are included.
 
--   `hover1`, `hover2`: Two variants of standing still in the air.
--   `fly_slow`: Flying slowly.
+-   `hover1`, `hover2`: Standing still in the air.
+-   `fly_slow`, `fly_slow2`: Flying slowly.
+-   `fly_fast2`: Flying fast.
 
 And the following player animations are taken from the original [3D Armor: Fly & Swim] mod.
 
@@ -43,7 +44,7 @@ You can grant yourself "fly" privilege using the chat command `/grantme fly`, or
 ### Customize animations
 
 You can use the `/3ah_gui` chat command to open a configuration window to customize the flying animations.
-There are two variants of hovering animations (`hover1` and `hover2`).
+Some animations have multiple variants, such as `hover1` and `hover2`, `fly_slow` and `fly_slow2`, etc.
 Some player skins look better in one animation than the other.
 
 ### Emote

@@ -36,28 +36,32 @@ local function peri_xy(start, length, phase, orig_table)
 end
 
 armor_hover.animations = {
-    stand         = { x = 0, y = 79 },
-    lay           = { x = 162, y = 166, lock_head = true },
-    walk          = { x = 168, y = 187 },
-    mine          = { x = 189, y = 198 },
-    walk_mine     = { x = 200, y = 219 },
-    sit           = { x = 81, y = 160 },
-    swim          = { x = 246, y = 279 },
-    swim_mine     = { x = 285, y = 318 },
-    fly_fast      = { x = 325, y = 334 },
-    fly_fast_mine = { x = 340, y = 349 },
-    fall          = { x = 355, y = 364 },
-    fall_mine     = { x = 365, y = 374 },
-    duck          = { x = 380, y = 380 },
-    duck_move     = { x = 381, y = 399 },
-    climb         = { x = 410, y = 429 },
-    climb_still   = { x = 410, y = 410 }, -- on climbable but not moving
-    hover1        = peri_xy(600, 90, 0.0),
-    hover1_mine   = peri_xy(800, 90, 0.0),
-    hover2        = peri_xy(1000, 90, 0.0),
-    hover2_mine   = peri_xy(1200, 90, 0.0),
-    fly_slow      = peri_xy(1400, 90, 0.0, { head_pitch = 0.45 * math.pi / 2 }), -- See model file.
-    fly_slow_mine = peri_xy(1600, 90, 0.0, { head_pitch = 0.45 * math.pi / 2 }),
+    stand          = { x = 0, y = 79 },
+    lay            = { x = 162, y = 166, lock_head = true },
+    walk           = { x = 168, y = 187 },
+    mine           = { x = 189, y = 198 },
+    walk_mine      = { x = 200, y = 219 },
+    sit            = { x = 81, y = 160 },
+    swim           = { x = 246, y = 279 },
+    swim_mine      = { x = 285, y = 318 },
+    fly_fast       = { x = 325, y = 334 },
+    fly_fast_mine  = { x = 340, y = 349 },
+    fall           = { x = 355, y = 364 },
+    fall_mine      = { x = 365, y = 374 },
+    duck           = { x = 380, y = 380 },
+    duck_move      = { x = 381, y = 399 },
+    climb          = { x = 410, y = 429 },
+    climb_still    = { x = 410, y = 410 }, -- on climbable but not moving
+    hover1         = peri_xy(600, 90, 0.0),
+    hover1_mine    = peri_xy(800, 90, 0.0),
+    hover2         = peri_xy(1000, 90, 0.0),
+    hover2_mine    = peri_xy(1200, 90, 0.0),
+    fly_slow       = peri_xy(1400, 90, 0.0, { head_pitch = 0.45 * math.pi / 2 }), -- See model file.
+    fly_slow_mine  = peri_xy(1600, 90, 0.0, { head_pitch = 0.45 * math.pi / 2 }),
+    fly_slow2      = peri_xy(1800, 90, 0.0, { head_pitch = 0.55 * math.pi / 2 }), -- See model file.
+    fly_slow2_mine = peri_xy(2000, 90, 0.0, { head_pitch = 0.55 * math.pi / 2 }),
+    fly_fast2      = { x = 2200, y = 2209 },
+    fly_fast2_mine = { x = 2215, y = 2224 },
 }
 
 --------------------------------------
@@ -87,7 +91,7 @@ make_mstate("fast_flying", "Fast Flying", "fly_fast")
 -----------------------------------------------
 -- Mstate-to-animation mapping configurations
 
-armor_hover.configurable_anim_names = { "hover1", "hover2", "fly_slow", "fly_fast" }
+armor_hover.configurable_anim_names = { "hover1", "hover2", "fly_slow", "fly_slow2", "fly_fast", "fly_fast2" }
 
 armor_hover.player_configs.mstate_mapping = {}
 for mstate, mstate_map in pairs(armor_hover.mstates) do
