@@ -142,10 +142,97 @@ local br_player_model_backend = {
     end,
 }
 
+local mcl_player_backend = {
+    name = "mcl_player",
+    player_state = {}, -- Map each player to its current animation states
+    initialize = function(self)
+        -- We need to override individual functions in the `mcl_player` module.
+
+        -- Override eye heights.
+        -- When flying, the sneak key is used for descending, not sneaking.
+        -- We simply remove the eye height change.
+        mcl_player.player_props_sneaking.eye_height = mcl_player.player_props_normal.eye_height
+        mcl_player.player_props_swimming.eye_height = mcl_player.player_props_normal.eye_height
+
+        local old_mcl_player_player_set_model = mcl_player.player_set_model
+        mcl_player.player_set_model = function(player, model_name)
+            -- We make MCL believe we have changed the model name
+            -- so that other parts of MCL can query the current model name.
+            -- But we don't actually set the player properties
+            -- so that `3d_armor_hover` still decides the actual model.
+            mcl_player.players[player].model = model_name
+        end
+
+        -- local old_mcl_util_set_properties = mcl_util.set_properties
+        -- mcl_util.set_properties = function(obj, props)
+        --     if obj:is_player() then
+        --         -- Do not set the eye height.
+        --         props.eye_height = nil
+        --     end
+        --     old_mcl_util_set_properties(obj, props)
+        -- end
+        mcl_player.player_set_visibility = function() end
+        mcl_player.player_set_skin = function() end
+        mcl_player.player_set_armor = function() end
+        mcl_player.player_set_animation = function() end
+
+        -- We need to register our own global step.
+        core.register_globalstep(function()
+            armor_hover.global_step()
+        end)
+    end,
+    on_joinplayer = function(self, player)
+        armor_hover.debug("Setting model: %s", armor_hover.player_mod)
+        player:set_properties({
+            mesh = armor_hover.player_mod,
+            textures = armor_hover.blank_textures, -- skin_backend will apply skin later.
+            visual = "mesh",
+            visual_size = { x = 1, y = 1 },
+            damage_texture_modifier = "^[colorize:red:130",
+            zoom_fov = 30.0,
+        })
+        clear_local_animation(player)
+        self.player_state[player:get_player_name()] = {}
+    end,
+    on_leaveplayer = function(self, player)
+        self.player_state[player:get_player_name()] = nil
+    end,
+    set_animation = function(self, player, animation_name, ani_spd)
+        local player_name = player:get_player_name()
+        local state = self.player_state[player:get_player_name()]
+        -- If the animation name and speed are not changed, don't set animation.
+        -- Calling `player:set_animation` will rewind the animation to its first frame.
+        if state.animation_name == animation_name and
+            state.ani_spd == ani_spd
+        then
+            return
+        end
+
+        state.animation_name = animation_name
+        state.ani_spd = ani_spd
+
+        local animation = armor_hover.animations[animation_name]
+        local animation_blend = 0.2 -- The number used by MCL.
+        player:set_animation(animation, ani_spd, animation_blend, true)
+        clear_local_animation(player)
+    end,
+    get_animation_name = function(self, player)
+        return self.player_state[player:get_player_name()].animation_name
+    end,
+    set_textures = function(self, player, textures)
+        player:set_properties({ textures = textures })
+    end,
+    is_attached = function(self, player)
+        return player:get_attach()
+    end,
+}
+
 if armor_hover.is_player_api then
     armor_hover.model_backend = player_api_backend
 elseif armor_hover.is_br_player_model then
     armor_hover.model_backend = br_player_model_backend
+elseif armor_hover.is_mcl_player then
+    armor_hover.model_backend = mcl_player_backend
 else
     error("We currently need one of the following mods: player_api, br_player_model")
 end
