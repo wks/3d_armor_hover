@@ -163,18 +163,27 @@ local mcl_player_backend = {
             mcl_player.players[player].model = model_name
         end
 
-        -- local old_mcl_util_set_properties = mcl_util.set_properties
-        -- mcl_util.set_properties = function(obj, props)
-        --     if obj:is_player() then
-        --         -- Do not set the eye height.
-        --         props.eye_height = nil
-        --     end
-        --     old_mcl_util_set_properties(obj, props)
-        -- end
-        mcl_player.player_set_visibility = function() end
-        mcl_player.player_set_skin = function() end
-        mcl_player.player_set_armor = function() end
-        mcl_player.player_set_animation = function() end
+        mcl_player.player_set_visibility = function()
+            -- TODO: Support invisibility
+        end
+        mcl_player.player_set_skin = function(player, texture)
+            -- We record the skin texture and update the player textures our way.
+            local player_name = player:get_player_name()
+            self:ensure_player_state_initialized(player)
+            self.player_state[player_name].skin_texture = texture
+            self:update_player_textures(player)
+        end
+        mcl_player.player_set_armor = function(player, texture)
+            -- We record the armor texture and update the player textures our way.
+            local player_name = player:get_player_name()
+            self:ensure_player_state_initialized(player)
+            self.player_state[player_name].armor_texture = texture
+            self:update_player_textures(player)
+        end
+        mcl_player.player_set_animation = function()
+            -- Player animation is completely controlled by our global step.
+            -- We disable their player_set_animation.
+        end
 
         -- We need to register our own global step.
         core.register_globalstep(function()
@@ -183,16 +192,19 @@ local mcl_player_backend = {
     end,
     on_joinplayer = function(self, player)
         armor_hover.debug("Setting model: %s", armor_hover.player_mod)
+        -- MCL may set skin textures and armor textures before our joinplayer callback is called.
+        -- We just let the first called function initialize the player states.
+        self:ensure_player_state_initialized(player)
         player:set_properties({
             mesh = armor_hover.player_mod,
-            textures = armor_hover.blank_textures, -- skin_backend will apply skin later.
+            textures = armor_hover.blank_textures, -- We set textures later.
             visual = "mesh",
             visual_size = { x = 1, y = 1 },
             damage_texture_modifier = "^[colorize:red:130",
             zoom_fov = 30.0,
         })
         clear_local_animation(player)
-        self.player_state[player:get_player_name()] = {}
+        self:update_player_textures(player)
     end,
     on_leaveplayer = function(self, player)
         self.player_state[player:get_player_name()] = nil
@@ -225,6 +237,22 @@ local mcl_player_backend = {
     is_attached = function(self, player)
         return player:get_attach()
     end,
+    update_player_textures = function(self, player)
+        local player_name = player:get_player_name()
+        self:ensure_player_state_initialized(player)
+        local player_state = self.player_state[player_name]
+        local textures = { player_state.skin_texture, "blank.png", player_state.armor_texture, "blank.png" }
+        self:set_textures(player, textures)
+    end,
+    ensure_player_state_initialized = function(self, player)
+        local player_name = player:get_player_name()
+        if not self.player_state[player_name] then
+            self.player_state[player_name] = {
+                skin_texture = "blank.png",
+                armor_texture = "blank.png",
+            }
+        end
+    end,
 }
 
 if armor_hover.is_player_api then
@@ -234,5 +262,5 @@ elseif armor_hover.is_br_player_model then
 elseif armor_hover.is_mcl_player then
     armor_hover.model_backend = mcl_player_backend
 else
-    error("We currently need one of the following mods: player_api, br_player_model")
+    error("We currently need one of the following mods: player_api, br_player_model, mcl_player")
 end

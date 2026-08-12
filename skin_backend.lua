@@ -37,6 +37,17 @@ local skinsdb_backend = {
     end,
 }
 
+local mcl_skins_backend = {
+    name = "mcl_skins",
+    player_states = {},
+    initialize = function(self)
+    end,
+    on_joinplayer = function(self, player)
+    end,
+    on_leaveplayer = function(self, player)
+    end,
+}
+
 local bundled_skins_backend = {
     name = "bundled_skins",
     skins = {},
@@ -193,6 +204,8 @@ local bundled_skins_backend = {
 
 if armor_hover.is_skinsdb then
     armor_hover.skin_backend = skinsdb_backend
+elseif armor_hover.is_mcl_skins then
+    armor_hover.skin_backend = mcl_skins_backend
 else
     armor_hover.skin_backend = bundled_skins_backend
 end

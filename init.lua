@@ -49,6 +49,7 @@ end
 
 armor_hover.is_3d_armor        = core.get_modpath("3d_armor")
 armor_hover.is_skinsdb         = core.get_modpath("skinsdb")
+armor_hover.is_mcl_skins       = core.get_modpath("mcl_skins")
 armor_hover.is_player_api      = core.get_modpath("player_api")
 armor_hover.is_br_player_model = core.get_modpath("br_player_model")
 armor_hover.is_mcl_player      = core.get_modpath("mcl_player")
