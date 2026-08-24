@@ -24,8 +24,9 @@ And the following player animations are taken from the original [3D Armor: Fly &
 -   `fall`: Falling down
 -   `fly_fast`: Superman-style fast flying
 
-![cover](screenshots/cover.webp)
-![BackroomTest animated](screenshots/screenshot-backroomtest-animated.webp)
+![(cover image)](screenshots/cover.webp)
+
+![(BackroomTest animated)](screenshots/screenshot-backroomtest-animated.webp)
 
 ## How to use
 
@@ -57,32 +58,45 @@ A bug (feature?) is currently preventing the emote from being canceled when the 
 
 ![Lying on the boat](screenshots/screenshot-emote-lay.webp)
 
-## Dependencies
+## Supported Luanti version
 
-There is currently no hard dependencies, but this mod only works with the following supported games:
+I tested it on Luanti 5.17.0 and 5.16.1, but it should work with slightly older versions.
 
-**[Minetest Game]**: In theory, this mod should work on all games based on MTG, but I have only tested [Asuna] for now.
+## Supported games
 
-![Screenshot of Minetest Game](screenshots/screenshot-mtg.webp)
+This mod works with the following games:
 
-**[Asuna]**: a Minetest Game derivative.
+**[Minetest Game]**: The game this mod and its predecessor [3D Armor: Fly & Swim] was initially designed for.
+This mod integrates well with the [3D Armor] mod (where the name of this mod comes from) and the [SkinsDB] mod.
+In theory, this mod should work on all games based on MTG, but I have only tested the following derivatives:
 
-![Screenshot of Asuna](screenshots/screenshot-asuna.webp)
+-   **[Asuna]**
+-   **[Mesecons Lab]**
 
-**[Backrooms Test]**: Don't let the endless maze discourage you.  Try to float in the air and relax.
+![(Screenshot of Minetest Game)](screenshots/screenshot-mtg.webp)
 
-![Screenshot of Backrooms Test](screenshots/screenshot-backroomtest.webp)
+![(Screenshot of Asuna)](screenshots/screenshot-asuna.webp)
 
-This mod works well with the following mods:
+**[Backrooms Test]**: This mod simply replaces the player character, and should work out of the box.
+Don't let the endless maze discourage you.
+Try to float in the air, and it can be quite relaxing, especially on level 37 as shown in the screenshot.
 
--   [3D Armor]: for displaying armor and wielded items
--   [SkinsDB]: for selecting skins
+![(Screenshot of Backrooms Test)](screenshots/screenshot-backroomtest.webp)
 
-I tested it on Luanti 5.16.1, but it should work with slightly older versions.
+**[Mineclonia]**: Support for Mineclonia is very experimental for now.
+It can use the skin from Mineclonia's skin editor, but can also use the bundled skins when Player Skin Customization is disabled on the server.
+Conventional armors work, but elytra doesn't work as expected.
+(But you probably won't use elytra anyway if you can just fly.)
+Wielded items, bow/crossbow shooting, shield blocking are not implemented, yet.
+
+![(Screenshot of Mineclonia)](screenshots/screenshot-mineclonia.webp)
 
 [Minetest Game]: https://content.luanti.org/packages/Luanti/minetest_game/
 [Asuna]: https://content.luanti.org/packages/EmptyStar/asuna/
+[Mesecons Lab]: https://content.luanti.org/packages/BuckarooBanzay/mesecons_lab/
 [Backrooms Test]: https://content.luanti.org/packages/Sumianvoice/backroomtest/
+[Mineclonia]: https://content.luanti.org/packages/ryvnf/mineclonia/
+
 [3D Armor]: https://content.luanti.org/packages/stu/3d_armor/
 [SkinsDB]: https://content.luanti.org/packages/bell07/skinsdb/
 
