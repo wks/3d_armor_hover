@@ -78,6 +78,14 @@ local bundled_skins_backend = {
             })
         end
 
+        -- Add Mineclonia's default skin
+        if core.get_modpath("mcl_player") then
+            add_skin({
+                file_prefix = "character",
+                skin_name = "Mineclonia default",
+            })
+        end
+
         -- Add bundled skins
 
         local modname    = core.get_current_modname()
