@@ -232,6 +232,11 @@ local mcl_player_backend = {
         return self.player_state[player:get_player_name()].animation_name
     end,
     set_textures = function(self, player, textures)
+        -- Workaround to let the bundled skins backend work.
+        -- We should further split the skin, armor, and wielditem into multiple backends.
+        local player_name = player:get_player_name()
+        self:ensure_player_state_initialized(player)
+        self.player_state[player_name].skin_texture = textures[1]
         player:set_properties({ textures = textures })
     end,
     is_attached = function(self, player)
@@ -242,7 +247,7 @@ local mcl_player_backend = {
         self:ensure_player_state_initialized(player)
         local player_state = self.player_state[player_name]
         local textures = { player_state.skin_texture, "blank.png", player_state.armor_texture, "blank.png" }
-        self:set_textures(player, textures)
+        player:set_properties({ textures = textures })
     end,
     ensure_player_state_initialized = function(self, player)
         local player_name = player:get_player_name()
