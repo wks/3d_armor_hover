@@ -22,6 +22,99 @@ local function clear_local_animation(player)
     player:set_local_animation(none, none, none, none, 30)
 end
 
+local devtest_backend = {
+    name = "devtest",
+    player_state = {}, -- Map each player to its current animation states
+    initialize = function(self)
+        core.register_globalstep(function()
+            armor_hover.global_step()
+        end)
+    end,
+    on_joinplayer = function(self, player)
+        armor_hover.debug("Setting model: %s", armor_hover.player_mod)
+        player:set_properties({
+            mesh = armor_hover.player_mod,
+            textures = armor_hover.blank_textures, -- skin_backend will apply skin later.
+            visual = "mesh",
+            visual_size = { x = 1, y = 1 },
+            damage_texture_modifier = "^[colorize:red:130",
+            zoom_fov = 30.0,
+        })
+        clear_local_animation(player)
+        self.player_state[player:get_player_name()] = {
+            current = {
+            },
+            desired = {
+                walk = true,
+                mine = false,
+                floating = true,
+            }
+        }
+        core.chat_send_player(player:get_player_name(), "player join")
+    end,
+    on_leaveplayer = function(self, player)
+        self.player_state[player:get_player_name()] = nil
+    end,
+    set_animation = function(self, player, animation_name, ani_spd)
+        local player_name = player:get_player_name()
+        -- core.chat_send_player(player_name, "set_animation")
+        local state = self.player_state[player_name]
+        -- If the animation name and speed are not changed, don't set animation.
+        -- Calling `player:set_animation` will rewind the animation to its first frame.
+        -- if state.animation_name == animation_name and
+        --     state.ani_spd == ani_spd
+        -- then
+        --     return
+        -- end
+
+        state.animation_name = animation_name
+        state.ani_spd = ani_spd
+
+        local animation = armor_hover.animations[animation_name]
+        local animation_blend = 0.1 -- The number used by most Backrooms Test animations.
+        --        player:set_animation(animation, ani_spd, animation_blend, true)
+        armor_hover.debug("Setting floating effect track...")
+        if state.current.floating ~= state.desired.floating then
+            state.current.floating = state.desired.floating
+            if state.desired.floating then
+                core.chat_send_player(player_name, "float start")
+                player:play_animation("FloatingEffectTrack", { speed = 30, priority = 2 })
+            else
+                core.chat_send_player(player_name, "float stop")
+                player:stop_animation("FloatingEffectTrack")
+            end
+        end
+        armor_hover.debug("Setting legacy track...")
+        if state.current.walk ~= state.desired.walk then
+            state.current.walk = state.desired.walk
+            if state.desired.walk then
+                player:play_animation("ArmatureTrack", {
+                    -- min_frame = animation.x,
+                    -- max_frame = animation.y,
+                    min_frame = 45,
+                    max_frame = 90,
+                    speed = 30,
+                    -- loop = true,
+                    priority = 1,
+                })
+            else
+                player:stop_animation("ArmatureTrack")
+            end
+        end
+        armor_hover.debug("done setting track.")
+        --clear_local_animation(player)
+    end,
+    get_animation_name = function(self, player)
+        return self.player_state[player:get_player_name()].animation_name
+    end,
+    set_textures = function(self, player, textures)
+        player:set_properties({ textures = textures })
+    end,
+    is_attached = function(self, player)
+        return player:get_attach()
+    end,
+}
+
 local player_api_backend = {
     name = "player_api",
     initialize = function(self)
@@ -260,7 +353,9 @@ local mcl_player_backend = {
     end,
 }
 
-if armor_hover.is_player_api then
+if armor_hover.is_devtest then
+    armor_hover.model_backend = devtest_backend
+elseif armor_hover.is_player_api then
     armor_hover.model_backend = player_api_backend
 elseif armor_hover.is_br_player_model then
     armor_hover.model_backend = br_player_model_backend

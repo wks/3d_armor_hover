@@ -47,6 +47,7 @@ end
 -----------------------
 -- Conditional mods
 
+armor_hover.is_devtest         = core.get_game_info().id == "devtest"
 armor_hover.is_3d_armor        = core.get_modpath("3d_armor")
 armor_hover.is_skinsdb         = core.get_modpath("skinsdb")
 -- mcl_skins can be disabled via configuration.
