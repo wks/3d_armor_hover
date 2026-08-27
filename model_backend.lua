@@ -45,9 +45,9 @@ local devtest_backend = {
             current = {
             },
             desired = {
-                walk = true,
+                walk = false,
                 mine = false,
-                floating = true,
+                floating = false,
             }
         }
         core.chat_send_player(player:get_player_name(), "player join")
@@ -57,7 +57,6 @@ local devtest_backend = {
     end,
     set_animation = function(self, player, animation_name, ani_spd)
         local player_name = player:get_player_name()
-        -- core.chat_send_player(player_name, "set_animation")
         local state = self.player_state[player_name]
         -- If the animation name and speed are not changed, don't set animation.
         -- Calling `player:set_animation` will rewind the animation to its first frame.
@@ -66,6 +65,10 @@ local devtest_backend = {
         -- then
         --     return
         -- end
+
+        state.desired.floating = armor_hover.to_boolean(animation_name:match("hover.*") or animation_name:match("fly_slow.*"))
+        state.desired.walk = armor_hover.to_boolean(not (animation_name:match("stand.*") or animation_name:match("hover.*") or animation_name == "mine"))
+        state.desired.mine = armor_hover.to_boolean(animation_name:match(".*mine"))
 
         state.animation_name = animation_name
         state.ani_spd = ani_spd
@@ -78,27 +81,30 @@ local devtest_backend = {
             state.current.floating = state.desired.floating
             if state.desired.floating then
                 core.chat_send_player(player_name, "float start")
-                player:play_animation("FloatingEffectTrack", { speed = 30, priority = 2 })
+                player:play_animation("FloatingEffect", { speed = 30, priority = 3 })
             else
                 core.chat_send_player(player_name, "float stop")
-                player:stop_animation("FloatingEffectTrack")
+                player:stop_animation("FloatingEffect")
             end
         end
-        armor_hover.debug("Setting legacy track...")
+        armor_hover.debug("Setting mining track...")
+        if state.current.mine ~= state.desired.mine then
+            state.current.mine = state.desired.mine
+            if state.desired.mine then
+                player:play_animation("Mine", { speed = 30, priority = 2 })
+            else
+                player:stop_animation("Mine")
+            end
+        end
+        armor_hover.debug("Setting walking track...")
         if state.current.walk ~= state.desired.walk then
             state.current.walk = state.desired.walk
             if state.desired.walk then
-                player:play_animation("ArmatureTrack", {
-                    -- min_frame = animation.x,
-                    -- max_frame = animation.y,
-                    min_frame = 45,
-                    max_frame = 90,
-                    speed = 30,
-                    -- loop = true,
-                    priority = 1,
-                })
+                player:play_animation("Walk", { speed = 30, priority = 1 })
+                -- player:play_animation("ArmatureTrack", { min_frame=168, max_frame=188, speed = 30, priority = 1 })
             else
-                player:stop_animation("ArmatureTrack")
+                player:stop_animation("Walk")
+                -- player:stop_animation("ArmatureTrack")
             end
         end
         armor_hover.debug("done setting track.")

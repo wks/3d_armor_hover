@@ -169,3 +169,12 @@ end
 function armor_hover.const_func(value)
     return function() return value end
 end
+
+-- Convert to boolean.  Returns either true or false.
+function armor_hover.to_boolean(value)
+    if value then
+        return true
+    else
+        return false
+    end
+end
