@@ -42,20 +42,82 @@ local devtest_backend = {
         })
         clear_local_animation(player)
         self.player_state[player:get_player_name()] = {
-            current = {
-            },
-            desired = {
-                walk = false,
-                mine = false,
-                floating = false,
-            }
+            mstate = nil,
+            mining = false,
+            floating = false,
+            current_mtrack = nil,
         }
         core.chat_send_player(player:get_player_name(), "player join")
     end,
     on_leaveplayer = function(self, player)
         self.player_state[player:get_player_name()] = nil
     end,
-    set_animation = function(self, player, animation_name, ani_spd)
+    set_animation = function(self, player, mstate, mining, emote)
+
+        mining = armor_hover.to_boolean(mining)
+
+        local player_name = player:get_player_name()
+        local state = self.player_state[player_name]
+
+        if not state.test then
+            state.test = true
+            --player:play_animation("FlyFast1", { speed = 30 })
+            player:play_animation("Lay", { speed = 60 })
+        end
+
+        -- local ans = player:get_animations()
+        -- core.chat_send_player(player:get_player_name(), "ans: ")
+        -- for k, v in pairs(ans) do
+        --     core.chat_send_player(player:get_player_name(), "track: "..k)
+        -- end
+
+        if true then return end
+
+        local float
+        if state.mstate ~= mstate then
+            state.mstate = mstate
+            if state.current_mtrack then
+                core.chat_send_player(player_name, "Stop mstate track: " .. state.current_mtrack)
+                player:stop_animation(state.current_mtrack)
+            end
+
+            local mstate_def = armor_hover.mstates[mstate]
+            local anim_name
+            if mstate_def.configurable then
+                anim_name = armor_hover.get_chosen_anim_name(player, mstate)
+            else
+                anim_name = mstate_def.anim_name
+            end
+            local animation = armor_hover.animations[anim_name]
+            core.chat_send_player(player_name, "Start mstate track: " .. animation.track)
+            player:play_animation(animation.track, animation)
+            state.current_mtrack = animation.track
+
+            float = armor_hover.to_boolean(animation.float)
+
+            if state.floating ~= float then
+                state.floating = float
+                if float then
+                    core.chat_send_player(player_name, "Start floating effect track")
+                    player:play_animation(armor_hover.floating_effect.track, armor_hover.floating_effect)
+                else
+                    core.chat_send_player(player_name, "Stop floating effect track")
+                    player:stop_animation(armor_hover.floating_effect.track)
+                end
+            end
+        end
+
+        if state.mining ~= mining then
+            state.mining = mining
+            if mining then
+                player:play_animation(armor_hover.mining_animation.track, armor_hover.mining_animation)
+            else
+                player:stop_animation(armor_hover.mining_animation.track)
+            end
+        end
+    end,
+    set_animation_old = function(self, player, animation_name, ani_spd)
+        error()
         local player_name = player:get_player_name()
         local state = self.player_state[player_name]
         -- If the animation name and speed are not changed, don't set animation.
@@ -66,7 +128,8 @@ local devtest_backend = {
         --     return
         -- end
 
-        state.desired.floating = armor_hover.to_boolean(animation_name:match("hover.*") or animation_name:match("fly_slow.*"))
+        state.desired.floating = armor_hover.to_boolean(animation_name:match("hover.*") or
+        animation_name:match("fly_slow.*"))
         state.desired.walk = armor_hover.to_boolean(not (animation_name:match("stand.*") or animation_name:match("hover.*") or animation_name == "mine"))
         state.desired.mine = armor_hover.to_boolean(animation_name:match(".*mine"))
 

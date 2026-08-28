@@ -258,7 +258,7 @@ function armor_hover.get_config_formspec(player_name)
         local options = armor_hover.configurable_anim_names
         local options_string = table.concat(options, ",")
 
-        for _, mstate in ipairs(armor_hover.mstate_list) do
+        for _, mstate in ipairs(armor_hover.configurable_mstate_list) do
             local mstate_map = armor_hover.mstates[mstate]
             local chosen_anim_name = armor_hover.get_chosen_anim_name(player, mstate)
             local chosen_index = armor_hover.list_find(options, chosen_anim_name) or 1

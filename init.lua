@@ -58,7 +58,7 @@ armor_hover.is_mcl_player      = core.get_modpath("mcl_player")
 
 ---------------------------------
 -- Volatile per-player storage
-local player_mstate            = {}
+armor_hover.player_states      = {}
 
 ----------------------------
 -- Initiate files
@@ -82,6 +82,7 @@ function armor_hover.global_step()
         local start_time    = profile and core.get_us_time()
 
         local player_name   = player:get_player_name()
+        local player_state  = armor_hover.player_states[player_name]
         local player_meta   = player:get_meta()
         local pos           = player:get_pos()
         local controls      = player:get_player_control()
@@ -109,15 +110,11 @@ function armor_hover.global_step()
         end
 
         -- Determine the animation.
-        local function determine_animation(mstate_transition)
+        local function determine_mstate(old_mstate)
             -- Death check.  Remember that we have replaced `player_api.globalstep`.
             if player:get_hp() == 0 then
                 return "lay"
             end
-
-            local nodes_down   = armor_hover.get_node_down_drawtype(pos, 5)
-            local check_fsable = armor_hover.node_down_check
-            local mine_suffix  = controls_lrmb and "_mine" or ""
 
             -- Swim: top priority.
             if swim_anim and
@@ -142,7 +139,7 @@ function armor_hover.global_step()
                 end
 
                 if is_in_liquid(0.1) or is_in_liquid(0.5) then
-                    return "swim" .. mine_suffix
+                    return "swim"
                 end
             end
 
@@ -186,14 +183,9 @@ function armor_hover.global_step()
                 -- This velocity is only achievable in the fast mode.
                 if fall_anim and
                     not controls_wasd and
-                    vel.y < -18.0 and
-                    check_fsable(nodes_down, 5, "a")
+                    vel.y < -18.0
                 then
-                    return "fall" .. mine_suffix
-                end
-
-                local function chosen_anim_name(mstate)
-                    return armor_hover.get_chosen_anim_name(player, mstate)
+                    return "fall"
                 end
 
                 -- Use the "Superman fly" animation only when flying fast enough.
@@ -201,7 +193,7 @@ function armor_hover.global_step()
                 if speed > 18.0 and
                     controls_wasd
                 then
-                    return chosen_anim_name("fast_flying") .. mine_suffix
+                    return "fly_fast"
                 end
 
                 -- TODO: Add more flying animations
@@ -210,62 +202,56 @@ function armor_hover.global_step()
                     -- If the player holds both left and right or both forward and backward,
                     -- the player will not move, but will switch to slow_fly_anim.
                     -- This is intentional.
-                    mstate_transition.new = "slow_flying"
-                    return chosen_anim_name("slow_flying") .. mine_suffix
+                    return "fly_slow"
                 end
 
                 if controls.jump or controls.sneak then
                     -- If the player holds both jump and sneak,
                     -- the player will not move, but will switch to hover_anim.
                     -- This is intentional.
-                    mstate_transition.new = "hovering"
-                    return chosen_anim_name("hovering") .. mine_suffix
+                    return "hover"
                 end
 
                 local when_stop_fly = armor_hover.player_configs.when_stop_fly:get(player)
 
                 if when_stop_fly == "keep" then
-                    mstate_transition.new = mstate_transition.old
-                    if mstate_transition.old == "slow_flying" then
-                        return chosen_anim_name("slow_flying") .. mine_suffix
+                    if old_mstate == "fly_slow" then
+                        return old_mstate
                     else
-                        return chosen_anim_name("hovering") .. mine_suffix
+                        return "hover"
                     end
                 else
-                    mstate_transition.new = "hovering"
-                    return chosen_anim_name("hovering") .. mine_suffix
+                    return "hover"
                 end
             else
                 -- Fall
                 if fall_anim and
-                    vel.y < -0.5 and
-                    check_fsable(nodes_down, 5, "a")
+                    vel.y < -0.5
                 then
-                    return "fall" .. mine_suffix
+                    return "fall"
                 end
 
                 -- Sneak
                 if crouch_anim and
-                    controls.sneak and
-                    not controls_lrmb -- TODO: Should there be a "sneak_mine" animation?
+                    controls.sneak
                 then
                     return controls_wasd and "duck_move" or "duck"
                 end
 
                 -- Walking or standing, mining or not.
                 if controls_wasd then
-                    return "walk" .. mine_suffix
+                    return "walk"
                 else
-                    return controls_lrmb and "mine" or "stand"
+                    return "stand"
                 end
             end
         end
 
-        local mstate_transition = {
-            old = player_mstate[player_name],
-        }
+        local old_mstate = player_state.mstate
+        local new_mstate = determine_mstate(old_mstate)
+        player_state.mstate = new_mstate
 
-        local anim_name;
+        local mining = controls_lrmb
 
         -- Any movement or action will cancel the current emote.
         if controls_wasd or controls_lrmb or controls.jump or controls.sneak then
@@ -273,23 +259,8 @@ function armor_hover.global_step()
         end
 
         local emote = armor_hover.emote.player_emote[player_name]
-        if emote then
-            -- The player is performing emote, and it has already set the animation.  Keep it.
-            anim_name = armor_hover.emote.emote_map[emote]
-        elseif attached_to then
-            -- Do not change animation if the player is attached (e.g. sleeping, on boat, etc.).
-            anim_name = armor_hover.model_backend:get_animation_name(player)
-        else
-            -- Determine the animation.
-            local ani_spd;
-            anim_name, ani_spd = determine_animation(mstate_transition)
-            ani_spd = ani_spd or 30
 
-            armor_hover.model_backend:set_animation(player, anim_name, ani_spd)
-        end
-
-        -- Regardless whether the player is attached, we update the cached mstate.
-        player_mstate[player_name] = mstate_transition.new
+        armor_hover.model_backend:set_animation(player, new_mstate, mining, emote)
 
         -- Head Animation
         -- We depend on the new `player:set_bone_override` method.
@@ -346,6 +317,11 @@ armor_hover.skin_backend:initialize()
 -- Register player-join/leave hooks
 
 core.register_on_joinplayer(function(player)
+    local player_name = player:get_player_name()
+    armor_hover.player_states[player_name] = {
+        mstate = "stand",
+        mining = false,
+    }
     armor_hover.model_backend:on_joinplayer(player)
     armor_hover.refresh_eye_offset(player)
     armor_hover.skin_backend:on_joinplayer(player)
@@ -353,9 +329,11 @@ core.register_on_joinplayer(function(player)
 end)
 
 core.register_on_leaveplayer(function(player)
+    local player_name = player:get_player_name()
     armor_hover.emote:on_leaveplayer(player)
     armor_hover.skin_backend:on_leaveplayer(player)
     armor_hover.model_backend:on_leaveplayer(player)
+    armor_hover.player_states = nil
 end)
 
 ----------------------------------------
@@ -364,7 +342,7 @@ end)
 core.register_chatcommand("3ah_set_animation", {
     params = "<mstate> <chosen_anim_name>",
     description = string.format("Set animation.  <mstate>: one of %s; <chosen_anim_name>: one of %s.",
-        table.concat(armor_hover.mstate_list, ", "),
+        table.concat(armor_hover.configurable_mstate_list, ", "),
         table.concat(armor_hover.configurable_anim_names, ", ")),
     func = function(name, param)
         local params = string.split(param, " ")
