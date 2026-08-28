@@ -61,8 +61,12 @@ local devtest_backend = {
 
         if not state.test then
             state.test = true
-            --player:play_animation("FlyFast1", { speed = 30 })
-            player:play_animation("Lay", { speed = 60 })
+            -- player:play_animation("FlyFast2", { speed = 30 })
+            -- player:play_animation("FlyFast1", { speed = 30 })
+            -- player:play_animation("FlySlow1", { speed = 30 })
+            -- player:play_animation("FlySlow2", { speed = 30 })
+            player:play_animation("Hover2", { speed = 30 })
+            -- player:play_animation("Walk", { speed = 30 })
         end
 
         -- local ans = player:get_animations()
