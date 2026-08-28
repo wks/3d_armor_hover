@@ -63,15 +63,23 @@ local devtest_backend = {
             state.test = true
             -- player:play_animation("FlyFast2", { speed = 30 })
             -- player:play_animation("FlyFast1", { speed = 30 })
-            -- player:play_animation("FlySlow1", { speed = 30 })
+            player:play_animation("FlySlow1", { speed = 30 })
             -- player:play_animation("FlySlow2", { speed = 30 })
             -- player:play_animation("Hover2", { speed = 30 })
             -- player:play_animation("Climb", { speed = 30 })
             -- player:play_animation("DuckMove", { speed = 30 })
             -- player:play_animation("Fall", { speed = 30 })
             -- player:play_animation("FlyFast1", { speed = 30 })
-            player:play_animation("Swim", { speed = 30 })
+            -- player:play_animation("Swim", { speed = 30 })
             -- player:play_animation("Walk", { speed = 30 })
+            -- player:play_animation("Lay", { speed = 30 })
+            -- player:play_animation("Sit", { speed = 30 })
+            -- player:play_animation("Stand", { speed = 30 })
+
+            -- player:play_animation("Stand", { speed = 0 })
+            player:play_animation("FloatingEffect", { speed = 30, priority = 2 })
+
+            -- player:play_animation("Mine", { speed = 30, priority = 1 })
         end
 
         -- local ans = player:get_animations()
