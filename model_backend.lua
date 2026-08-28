@@ -65,7 +65,12 @@ local devtest_backend = {
             -- player:play_animation("FlyFast1", { speed = 30 })
             -- player:play_animation("FlySlow1", { speed = 30 })
             -- player:play_animation("FlySlow2", { speed = 30 })
-            player:play_animation("Hover2", { speed = 30 })
+            -- player:play_animation("Hover2", { speed = 30 })
+            -- player:play_animation("Climb", { speed = 30 })
+            -- player:play_animation("DuckMove", { speed = 30 })
+            -- player:play_animation("Fall", { speed = 30 })
+            -- player:play_animation("FlyFast1", { speed = 30 })
+            player:play_animation("Swim", { speed = 30 })
             -- player:play_animation("Walk", { speed = 30 })
         end
 
