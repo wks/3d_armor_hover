@@ -268,9 +268,8 @@ function armor_hover.global_step()
         if player.set_bone_override then
             local look_pitch = player:get_look_vertical()
 
-            -- There is a slight chance that if the player is attached to, we won't know its current animation name.
-            if anim_name then
-                local anim = armor_hover.animations[anim_name]
+            do
+                local anim = armor_hover.animations[new_mstate]
                 if anim.lock_head then
                     look_pitch = 0;
                 elseif anim.head_pitch then

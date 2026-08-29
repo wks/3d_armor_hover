@@ -59,36 +59,36 @@ local devtest_backend = {
         local player_name = player:get_player_name()
         local state = self.player_state[player_name]
 
-        if not state.test then
-            state.test = true
-            -- player:play_animation("FlyFast2", { speed = 30 })
-            -- player:play_animation("FlyFast1", { speed = 30 })
-            player:play_animation("FlySlow1", { speed = 30 })
-            -- player:play_animation("FlySlow2", { speed = 30 })
-            -- player:play_animation("Hover2", { speed = 30 })
-            -- player:play_animation("Climb", { speed = 30 })
-            -- player:play_animation("DuckMove", { speed = 30 })
-            -- player:play_animation("Fall", { speed = 30 })
-            -- player:play_animation("FlyFast1", { speed = 30 })
-            -- player:play_animation("Swim", { speed = 30 })
-            -- player:play_animation("Walk", { speed = 30 })
-            -- player:play_animation("Lay", { speed = 30 })
-            -- player:play_animation("Sit", { speed = 30 })
-            -- player:play_animation("Stand", { speed = 30 })
+        -- if not state.test then
+        --     state.test = true
+        --     -- player:play_animation("FlyFast2", { speed = 30 })
+        --     -- player:play_animation("FlyFast1", { speed = 30 })
+        --     -- player:play_animation("FlySlow1", { speed = 30 })
+        --     -- player:play_animation("FlySlow2", { speed = 30 })
+        --     -- player:play_animation("Hover2", { speed = 30 })
+        --     -- player:play_animation("Climb", { speed = 30 })
+        --     -- player:play_animation("DuckMove", { speed = 30 })
+        --     -- player:play_animation("Fall", { speed = 30 })
+        --     -- player:play_animation("FlyFast1", { speed = 30 })
+        --     -- player:play_animation("Swim", { speed = 30 })
+        --     -- player:play_animation("Walk", { speed = 30 })
+        --     player:play_animation("Lay", { speed = 30 })
+        --     -- player:play_animation("Sit", { speed = 30 })
+        --     -- player:play_animation("Stand", { speed = 30 })
 
-            -- player:play_animation("Stand", { speed = 0 })
-            player:play_animation("FloatingEffect", { speed = 30, priority = 2 })
+        --     -- player:play_animation("Stand", { speed = 0 })
+        --     player:play_animation("FloatingEffect", { speed = 30, priority = 2 })
 
-            -- player:play_animation("Mine", { speed = 30, priority = 1 })
-        end
-
-        -- local ans = player:get_animations()
-        -- core.chat_send_player(player:get_player_name(), "ans: ")
-        -- for k, v in pairs(ans) do
-        --     core.chat_send_player(player:get_player_name(), "track: "..k)
+        --     -- player:play_animation("Mine", { speed = 30, priority = 1 })
         -- end
 
-        if true then return end
+        -- -- local ans = player:get_animations()
+        -- -- core.chat_send_player(player:get_player_name(), "ans: ")
+        -- -- for k, v in pairs(ans) do
+        -- --     core.chat_send_player(player:get_player_name(), "track: "..k)
+        -- -- end
+
+        -- if true then return end
 
         local float
         if state.mstate ~= mstate then

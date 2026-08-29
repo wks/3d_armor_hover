@@ -33,8 +33,8 @@ armor_hover.animations = {
     climb_still = { track = "Climb", speed = 0 },    -- on climbable but not moving
     hover       = { track = "Stand", speed = 0, float = true },
     hover2      = { track = "Hover2", float = true },
-    fly_slow    = { track = "FlySlow1", float = true, head_pitch = 0.45 * math.pi / 2 },    -- See model file.
-    fly_slow2   = { track = "FlySlow2", float = true, head_pitch = 0.55 * math.pi / 2 },    -- See model file.
+    fly_slow    = { track = "FlySlow1", float = true, head_pitch = math.rad(45) },    -- See model file.
+    fly_slow2   = { track = "FlySlow2", float = true, head_pitch = math.rad(55) },    -- See model file.
     fly_fast    = { track = "FlyFast1" },
     fly_fast2   = { track = "FlyFast2" },
 }
