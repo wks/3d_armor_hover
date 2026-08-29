@@ -67,7 +67,7 @@ dofile(modpath .. "/i_functions.lua")
 dofile(modpath .. "/config.lua")
 dofile(modpath .. "/animations.lua")
 dofile(modpath .. "/model.lua")
-dofile(modpath .. "/model_backend.lua")
+dofile(modpath .. "/game_backend.lua")
 dofile(modpath .. "/skin_backend.lua")
 dofile(modpath .. "/gui.lua")
 dofile(modpath .. "/emote.lua")
@@ -98,7 +98,7 @@ function armor_hover.global_step()
         -- instead of checking the "fly" privilege?
         local fly           = privs.fly
 
-        local attached_to   = armor_hover.model_backend:is_attached(player)
+        local attached_to   = armor_hover.game_backend:is_attached(player)
 
         -- Sets terminal velocity to about 150Km/hr beyond
         -- this speed chunk load issues become more noticable
@@ -301,9 +301,9 @@ end
 armor_hover.model:initialize()
 
 -------------------------------------
--- Initialize the model backend
+-- Initialize the game backend
 
-armor_hover.model_backend:initialize()
+armor_hover.game_backend:initialize()
 
 -------------------------------------
 -- Initialize the skin backend
@@ -320,7 +320,7 @@ core.register_on_joinplayer(function(player)
         mining = false,
     }
     armor_hover.model:on_joinplayer(player)
-    armor_hover.model_backend:on_joinplayer(player)
+    armor_hover.game_backend:on_joinplayer(player)
     armor_hover.refresh_eye_offset(player)
     armor_hover.skin_backend:on_joinplayer(player)
     armor_hover.emote:on_joinplayer(player)
@@ -330,7 +330,7 @@ core.register_on_leaveplayer(function(player)
     local player_name = player:get_player_name()
     armor_hover.emote:on_leaveplayer(player)
     armor_hover.skin_backend:on_leaveplayer(player)
-    armor_hover.model_backend:on_leaveplayer(player)
+    armor_hover.game_backend:on_leaveplayer(player)
     armor_hover.model:on_leaveplayer(player)
     armor_hover.player_states[player_name] = nil
 end)

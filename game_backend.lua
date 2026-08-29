@@ -338,13 +338,13 @@ local mcl_player_backend = {
 }
 
 if armor_hover.is_devtest then
-    armor_hover.model_backend = devtest_backend
+    armor_hover.game_backend = devtest_backend
 elseif armor_hover.is_player_api then
-    armor_hover.model_backend = player_api_backend
+    armor_hover.game_backend = player_api_backend
 elseif armor_hover.is_br_player_model then
-    armor_hover.model_backend = br_player_model_backend
+    armor_hover.game_backend = br_player_model_backend
 elseif armor_hover.is_mcl_player then
-    armor_hover.model_backend = mcl_player_backend
+    armor_hover.game_backend = mcl_player_backend
 else
     error("We currently need one of the following mods: player_api, br_player_model, mcl_player")
 end
