@@ -24,18 +24,47 @@ local skinsdb_backend = {
         -- Hack: Force using our player_mod after skinsdb switches skin.
         local old_apply_skin_to_player = skins.skin_class.apply_skin_to_player
 
-        function skins.skin_class:apply_skin_to_player(player)
-            armor_hover.debug("Letting skinsdb apply skin...")
-            old_apply_skin_to_player(self, player)
-            armor_hover.debug("Force re-registering player mod: %s", armor_hover.player_mod)
-            armor_hover.model_backend:reload_model(player)
+        function skins.skin_class.apply_skin_to_player(skin, player)
+            -- SkinsDB calls on_joinplayer before us.
+            -- We ignore this invocation and re-apply skin when player joins.
+            if not armor_hover.is_joinplayer_called(player) then return end
+            self:apply_skin_to_player(player, skin)
         end
     end,
     on_joinplayer = function(self, player)
+        local skin = skins.get_player_skin(player)
+        self:apply_skin_to_player(player, skin)
     end,
     on_leaveplayer = function(self, player)
     end,
 }
+
+function skinsdb_backend:apply_skin_to_player(player, skin)
+    local player_name = player:get_player_name()
+
+    local ver = skin:get_meta("format") or "1.0"
+    local skin_texture = skin:get_texture()
+    if ver == "1.8" then
+        armor_hover.model:set_skin_18(player, skin_texture)
+    else
+        armor_hover.model:set_skin_10(player, skin_texture)
+    end
+
+    local armor_texture = "blank.png"
+    local wielditem_texture = "blank.png"
+
+    -- TODO: Isolate armor into armor backend.
+    if armor_hover.is_3d_armor then
+        local armor_player_texture = armor.textures[player_name]
+        if armor_player_texture then
+            armor_texture = armor_player_texture.armor or armor_texture
+            wielditem_texture = armor_player_texture.wielditem or wielditem_texture
+        end
+    end
+
+    armor_hover.model:set_armor(player, armor_texture)
+    armor_hover.model:set_wielded_item(player, wielditem_texture)
+end
 
 local mcl_skins_backend = {
     name = "mcl_skins",
@@ -146,7 +175,8 @@ local bundled_skins_backend = {
             -- 3D Armor will update the textures when equipping/unequipping armors.
             -- Since our model is different, we apply the textures differently.
             armor.update_player_visuals = function(armor_self, player)
-                if not player then
+                -- 3D Armor may apply armor before our on_joinplayer is called.
+                if not player or not armor_hover.is_joinplayer_called(player) then
                     return
                 end
                 self:apply_skin(player)
