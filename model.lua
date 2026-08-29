@@ -92,7 +92,7 @@ armor_hover.model = {
     end,
 }
 
-armor_hover.model.player_model = "skinsdb_3d_armor_character_5_hover.glb"
+armor_hover.model.player_model = "3d_armor_hover_character.glb"
 armor_hover.model.blank_texture = "blank.png"
 
 function armor_hover.model:init_state(player)
