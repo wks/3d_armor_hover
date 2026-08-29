@@ -68,10 +68,36 @@ armor_hover.model = {
             end
         end
     end,
+    set_skin_10 = function(self, player, texture)
+        local state = self:get_state(player)
+        state.textures[1] = texture
+        state.textures[2] = self.blank_texture
+        self:reapply_player_textures(player)
+    end,
+    set_skin_18 = function(self, player, texture)
+        local state = self:get_state(player)
+        state.textures[1] = self.blank_texture
+        state.textures[2] = texture
+        self:reapply_player_textures(player)
+    end,
+    set_armor = function(self, player, texture)
+        local state = self:get_state(player)
+        state.textures[3] = texture
+        self:reapply_player_textures(player)
+    end,
+    set_wielded_item = function(self, player, texture)
+        local state = self:get_state(player)
+        state.textures[4] = texture
+        self:reapply_player_textures(player)
+    end,
 }
+
+armor_hover.model.player_model = "skinsdb_3d_armor_character_5_hover.glb"
+armor_hover.model.blank_texture = "blank.png"
 
 function armor_hover.model:init_state(player)
     armor_hover.player_states[player:get_player_name()].model = {
+        textures = { self.blank_texture, self.blank_texture, self.blank_texture, self.blank_texture },
         mstate = nil,
         mining = false,
         floating = false,
@@ -90,10 +116,12 @@ end
 
 -- Reset the player model.  Called when the user joins or when the model is accidentally set by other mods.
 function armor_hover.model:reset_player_model(player)
-    local player_mod, textures = self:player_model()
-    armor_hover.debug("Setting model for player '%s' to '%s'", player:get_player_name(), armor_hover.player_mod)
+    local state = self:get_state(player)
+    local player_model = self.player_model
+    local textures = state.textures
+    armor_hover.debug("Setting model for player '%s' to '%s'", player:get_player_name(), player_model)
     player:set_properties({
-        mesh = player_mod,
+        mesh = player_model,
         textures = textures,
         visual = "mesh",
         visual_size = { x = 1, y = 1 },
@@ -101,13 +129,12 @@ function armor_hover.model:reset_player_model(player)
     clear_local_animation(player)
 end
 
--- Get the player model and the initial textures (blank).
-function armor_hover.model.player_model(self)
-    local player_mod = "skinsdb_3d_armor_character_5_hover.glb"
-    local textures = { "blank.png",
-        "blank.png",
-        "blank.png",
-        "blank.png" }
-
-    return player_mod, textures
+-- Re-apply player textures.
+function armor_hover.model:reapply_player_textures(player)
+    local state = self:get_state(player)
+    local textures = state.textures
+    armor_hover.debug("Applying textures to player '%s'", player:get_player_name())
+    player:set_properties({
+        textures = textures,
+    })
 end

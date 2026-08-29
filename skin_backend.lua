@@ -171,12 +171,9 @@ local bundled_skins_backend = {
 
         armor_hover.debug("Applying textures. skin: [%s], armor: [%s], wield: [%s]",
             skin_texture_file, armor_texture, wielditem_texture)
-        armor_hover.model_backend:set_textures(player, {
-            skin_texture_file,
-            "blank.png", -- The bundled skins are all 1.0 skins.
-            armor_texture,
-            wielditem_texture,
-        })
+        armor_hover.model:set_skin_10(player, skin_texture_file) -- The bundled skins are all 1.0 skins.
+        armor_hover.model:set_armor(player, armor_texture)
+        armor_hover.model:set_wielded_item(player, wielditem_texture)
     end,
     on_joinplayer = function(self, player)
         self:apply_skin(player)
