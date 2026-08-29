@@ -66,6 +66,7 @@ armor_hover.player_states      = {}
 dofile(modpath .. "/i_functions.lua")
 dofile(modpath .. "/config.lua")
 dofile(modpath .. "/animations.lua")
+dofile(modpath .. "/model.lua")
 dofile(modpath .. "/model_backend.lua")
 dofile(modpath .. "/skin_backend.lua")
 dofile(modpath .. "/gui.lua")
@@ -260,7 +261,7 @@ function armor_hover.global_step()
 
         local emote = armor_hover.emote.player_emote[player_name]
 
-        armor_hover.model_backend:set_animation(player, new_mstate, mining, emote)
+        armor_hover.model:set_animation(player, new_mstate, mining, emote)
 
         -- Head Animation
         -- We depend on the new `player:set_bone_override` method.
@@ -296,11 +297,8 @@ function armor_hover.global_step()
 end
 
 -------------------------------------
--- Load player model
-
-local player_mod, blank_textures = armor_hover.get_player_model()
-armor_hover.player_mod = player_mod
-armor_hover.blank_textures = blank_textures
+-- Initialize the model module
+armor_hover.model:initialize()
 
 -------------------------------------
 -- Initialize the model backend
@@ -321,6 +319,7 @@ core.register_on_joinplayer(function(player)
         mstate = "stand",
         mining = false,
     }
+    armor_hover.model:on_joinplayer(player)
     armor_hover.model_backend:on_joinplayer(player)
     armor_hover.refresh_eye_offset(player)
     armor_hover.skin_backend:on_joinplayer(player)
@@ -332,6 +331,7 @@ core.register_on_leaveplayer(function(player)
     armor_hover.emote:on_leaveplayer(player)
     armor_hover.skin_backend:on_leaveplayer(player)
     armor_hover.model_backend:on_leaveplayer(player)
+    armor_hover.model:on_leaveplayer(player)
     armor_hover.player_states = nil
 end)
 

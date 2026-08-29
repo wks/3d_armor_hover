@@ -16,19 +16,6 @@
 -- License along with this library; if not, see <https://www.gnu.org/licenses/>.
 
 ----------------------------------------
--- Get Player model and textures
-
-function armor_hover.get_player_model()
-    local player_mod = "skinsdb_3d_armor_character_5_hover.glb"
-    local texture = { "blank.png",
-        "blank.png",
-        "blank.png",
-        "blank.png" }
-
-    return player_mod, texture
-end
-
-----------------------------------------
 -- Get WASD, pressed = true
 
 function armor_hover.get_wasd_state(controls)
