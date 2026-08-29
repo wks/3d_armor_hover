@@ -60,6 +60,10 @@ armor_hover.is_mcl_player      = core.get_modpath("mcl_player")
 -- Volatile per-player storage
 armor_hover.player_states      = {}
 
+function armor_hover.is_joinplayer_called(player)
+    return armor_hover.player_states[player:get_player_name()] ~= nil
+end
+
 ----------------------------
 -- Initiate files
 

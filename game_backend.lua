@@ -30,70 +30,6 @@ local devtest_backend = {
     end,
     on_leaveplayer = function(self, player)
     end,
-
-    set_animation_old = function(self, player, animation_name, ani_spd)
-        error()
-        local player_name = player:get_player_name()
-        local state = self.player_state[player_name]
-        -- If the animation name and speed are not changed, don't set animation.
-        -- Calling `player:set_animation` will rewind the animation to its first frame.
-        -- if state.animation_name == animation_name and
-        --     state.ani_spd == ani_spd
-        -- then
-        --     return
-        -- end
-
-        state.desired.floating = armor_hover.to_boolean(animation_name:match("hover.*") or
-            animation_name:match("fly_slow.*"))
-        state.desired.walk = armor_hover.to_boolean(not (animation_name:match("stand.*") or animation_name:match("hover.*") or animation_name == "mine"))
-        state.desired.mine = armor_hover.to_boolean(animation_name:match(".*mine"))
-
-        state.animation_name = animation_name
-        state.ani_spd = ani_spd
-
-        local animation = armor_hover.animations[animation_name]
-        local animation_blend = 0.1 -- The number used by most Backrooms Test animations.
-        --        player:set_animation(animation, ani_spd, animation_blend, true)
-        armor_hover.debug("Setting floating effect track...")
-        if state.current.floating ~= state.desired.floating then
-            state.current.floating = state.desired.floating
-            if state.desired.floating then
-                core.chat_send_player(player_name, "float start")
-                player:play_animation("FloatingEffect", { speed = 30, priority = 3 })
-            else
-                core.chat_send_player(player_name, "float stop")
-                player:stop_animation("FloatingEffect")
-            end
-        end
-        armor_hover.debug("Setting mining track...")
-        if state.current.mine ~= state.desired.mine then
-            state.current.mine = state.desired.mine
-            if state.desired.mine then
-                player:play_animation("Mine", { speed = 30, priority = 2 })
-            else
-                player:stop_animation("Mine")
-            end
-        end
-        armor_hover.debug("Setting walking track...")
-        if state.current.walk ~= state.desired.walk then
-            state.current.walk = state.desired.walk
-            if state.desired.walk then
-                player:play_animation("Walk", { speed = 30, priority = 1 })
-                -- player:play_animation("ArmatureTrack", { min_frame=168, max_frame=188, speed = 30, priority = 1 })
-            else
-                player:stop_animation("Walk")
-                -- player:stop_animation("ArmatureTrack")
-            end
-        end
-        armor_hover.debug("done setting track.")
-        --clear_local_animation(player)
-    end,
-    get_animation_name = function(self, player)
-        return self.player_state[player:get_player_name()].animation_name
-    end,
-    set_textures = function(self, player, textures)
-        player:set_properties({ textures = textures })
-    end,
     is_attached = function(self, player)
         return player:get_attach()
     end,
@@ -102,12 +38,6 @@ local devtest_backend = {
 local player_api_backend = {
     name = "player_api",
     initialize = function(self)
-        player_api.register_model(armor_hover.player_mod, {
-            animation_speed = 30,
-            textures = armor_hover.blank_textures,
-            animations = armor_hover.animations,
-        })
-
         -- Hack: Override player_api.globalstep.
         -- player_api.globalstep will set animation.  If we register another global_step and change
         -- the animation to a different value, the game engine will perceive that the animation is
@@ -120,26 +50,12 @@ local player_api_backend = {
             armor_hover.global_step()
         end
     end,
-    reload_model = function(self, player)
-        player_api.set_model(player, armor_hover.player_mod)
-    end,
     on_joinplayer = function(self, player)
-        armor_hover.debug("Setting model: %s", armor_hover.player_mod)
-        player_api.set_model(player, armor_hover.player_mod)
         player_api.player_attached[player:get_player_name()] = false
-        clear_local_animation(player)
+        armor_hover.model:reset_player_model(player)
     end,
     on_leaveplayer = function(self, player)
-    end,
-    set_animation = function(self, player, animation_name, ani_spd)
-        player_api.set_animation(player, animation_name, ani_spd)
-        clear_local_animation(player)
-    end,
-    get_animation_name = function(self, player)
-        return player_api.get_animation(player).animation
-    end,
-    set_textures = function(self, player, textures)
-        player_api.set_textures(player, textures)
+        player_api.player_attached[player:get_player_name()] = nil
     end,
     is_attached = function(self, player)
         -- The player has a `get_attach()` method,
@@ -151,7 +67,6 @@ local player_api_backend = {
 
 local br_player_model_backend = {
     name = "br_player_model",
-    player_state = {}, -- Map each player to its current animation states
     initialize = function(self)
         -- Hack: We can't override `br_player_model.on_step`.
         -- The br_player_model mod registers its *existing value* with register_globalstep,
@@ -174,45 +89,9 @@ local br_player_model_backend = {
         end)
     end,
     on_joinplayer = function(self, player)
-        armor_hover.debug("Setting model: %s", armor_hover.player_mod)
-        player:set_properties({
-            mesh = armor_hover.player_mod,
-            textures = armor_hover.blank_textures, -- skin_backend will apply skin later.
-            visual = "mesh",
-            visual_size = { x = 1, y = 1 },
-            damage_texture_modifier = "^[colorize:red:130",
-            zoom_fov = 30.0,
-        })
-        clear_local_animation(player)
-        self.player_state[player:get_player_name()] = {}
+        armor_hover.model:reset_player_model(player)
     end,
     on_leaveplayer = function(self, player)
-        self.player_state[player:get_player_name()] = nil
-    end,
-    set_animation = function(self, player, animation_name, ani_spd)
-        local player_name = player:get_player_name()
-        local state = self.player_state[player:get_player_name()]
-        -- If the animation name and speed are not changed, don't set animation.
-        -- Calling `player:set_animation` will rewind the animation to its first frame.
-        if state.animation_name == animation_name and
-            state.ani_spd == ani_spd
-        then
-            return
-        end
-
-        state.animation_name = animation_name
-        state.ani_spd = ani_spd
-
-        local animation = armor_hover.animations[animation_name]
-        local animation_blend = 0.1 -- The number used by most Backrooms Test animations.
-        player:set_animation(animation, ani_spd, animation_blend, true)
-        clear_local_animation(player)
-    end,
-    get_animation_name = function(self, player)
-        return self.player_state[player:get_player_name()].animation_name
-    end,
-    set_textures = function(self, player, textures)
-        player:set_properties({ textures = textures })
     end,
     is_attached = function(self, player)
         return player:get_attach()
@@ -221,7 +100,6 @@ local br_player_model_backend = {
 
 local mcl_player_backend = {
     name = "mcl_player",
-    player_state = {}, -- Map each player to its current animation states
     initialize = function(self)
         -- We need to override individual functions in the `mcl_player` module.
 
@@ -244,18 +122,15 @@ local mcl_player_backend = {
             -- TODO: Support invisibility
         end
         mcl_player.player_set_skin = function(player, texture)
-            -- We record the skin texture and update the player textures our way.
-            local player_name = player:get_player_name()
-            self:ensure_player_state_initialized(player)
-            self.player_state[player_name].skin_texture = texture
-            self:update_player_textures(player)
+            -- mcl_skins calls this function in its on_joinplayer
+            -- which is executed before our on_joinplayer.
+            -- We ignore this invocation, and re-call update_player_skin
+            -- in our on_joinplayer.
+            if not armor_hover.is_joinplayer_called(player) then return end
+            armor_hover.model:set_skin_10(player, texture)
         end
         mcl_player.player_set_armor = function(player, texture)
-            -- We record the armor texture and update the player textures our way.
-            local player_name = player:get_player_name()
-            self:ensure_player_state_initialized(player)
-            self.player_state[player_name].armor_texture = texture
-            self:update_player_textures(player)
+            armor_hover.model:set_armor(player, texture)
         end
         mcl_player.player_set_animation = function()
             -- Player animation is completely controlled by our global step.
@@ -268,72 +143,16 @@ local mcl_player_backend = {
         end)
     end,
     on_joinplayer = function(self, player)
-        armor_hover.debug("Setting model: %s", armor_hover.player_mod)
-        -- MCL may set skin textures and armor textures before our joinplayer callback is called.
-        -- We just let the first called function initialize the player states.
-        self:ensure_player_state_initialized(player)
-        player:set_properties({
-            mesh = armor_hover.player_mod,
-            textures = armor_hover.blank_textures, -- We set textures later.
-            visual = "mesh",
-            visual_size = { x = 1, y = 1 },
-            damage_texture_modifier = "^[colorize:red:130",
-            zoom_fov = 30.0,
-        })
-        clear_local_animation(player)
-        self:update_player_textures(player)
+        armor_hover.model:reset_player_model(player)
+        if mcl_skins then
+            mcl_skins.update_player_skin(player)
+        end
     end,
     on_leaveplayer = function(self, player)
         self.player_state[player:get_player_name()] = nil
     end,
-    set_animation = function(self, player, animation_name, ani_spd)
-        local player_name = player:get_player_name()
-        local state = self.player_state[player:get_player_name()]
-        -- If the animation name and speed are not changed, don't set animation.
-        -- Calling `player:set_animation` will rewind the animation to its first frame.
-        if state.animation_name == animation_name and
-            state.ani_spd == ani_spd
-        then
-            return
-        end
-
-        state.animation_name = animation_name
-        state.ani_spd = ani_spd
-
-        local animation = armor_hover.animations[animation_name]
-        local animation_blend = 0.2 -- The number used by MCL.
-        player:set_animation(animation, ani_spd, animation_blend, true)
-        clear_local_animation(player)
-    end,
-    get_animation_name = function(self, player)
-        return self.player_state[player:get_player_name()].animation_name
-    end,
-    set_textures = function(self, player, textures)
-        -- Workaround to let the bundled skins backend work.
-        -- We should further split the skin, armor, and wielditem into multiple backends.
-        local player_name = player:get_player_name()
-        self:ensure_player_state_initialized(player)
-        self.player_state[player_name].skin_texture = textures[1]
-        player:set_properties({ textures = textures })
-    end,
     is_attached = function(self, player)
         return player:get_attach()
-    end,
-    update_player_textures = function(self, player)
-        local player_name = player:get_player_name()
-        self:ensure_player_state_initialized(player)
-        local player_state = self.player_state[player_name]
-        local textures = { player_state.skin_texture, "blank.png", player_state.armor_texture, "blank.png" }
-        player:set_properties({ textures = textures })
-    end,
-    ensure_player_state_initialized = function(self, player)
-        local player_name = player:get_player_name()
-        if not self.player_state[player_name] then
-            self.player_state[player_name] = {
-                skin_texture = "blank.png",
-                armor_texture = "blank.png",
-            }
-        end
     end,
 }
 
