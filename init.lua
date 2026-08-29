@@ -332,7 +332,7 @@ core.register_on_leaveplayer(function(player)
     armor_hover.skin_backend:on_leaveplayer(player)
     armor_hover.model_backend:on_leaveplayer(player)
     armor_hover.model:on_leaveplayer(player)
-    armor_hover.player_states = nil
+    armor_hover.player_states[player_name] = nil
 end)
 
 ----------------------------------------

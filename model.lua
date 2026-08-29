@@ -18,27 +18,18 @@
 -- This file sets the player model and plays player animations.
 
 armor_hover.model = {
-    player_state = {}, -- Map each player to its current animation states
     initialize = function(self)
     end,
     on_joinplayer = function(self, player)
-        self.player_state[player:get_player_name()] = {
-            mstate = nil,
-            mining = false,
-            floating = false,
-            current_mtrack = nil,
-        }
+        self:init_state(player)
     end,
     on_leaveplayer = function(self, player)
-        self.player_state[player:get_player_name()] = nil
     end,
     set_animation = function(self, player, mstate, mining, emote)
         mining = armor_hover.to_boolean(mining)
 
-        local player_name = player:get_player_name()
-        local state = self.player_state[player_name]
+        local state = self:get_state(player)
 
-        local float
         if state.mstate ~= mstate then
             state.mstate = mstate
             if state.current_mtrack then
@@ -56,7 +47,7 @@ armor_hover.model = {
             player:play_animation(animation.track, animation)
             state.current_mtrack = animation.track
 
-            float = armor_hover.to_boolean(animation.float)
+            local float = armor_hover.to_boolean(animation.float)
 
             if state.floating ~= float then
                 state.floating = float
@@ -79,13 +70,26 @@ armor_hover.model = {
     end,
 }
 
+function armor_hover.model:init_state(player)
+    armor_hover.player_states[player:get_player_name()].model = {
+        mstate = nil,
+        mining = false,
+        floating = false,
+        current_mtrack = nil,
+    }
+end
+
+function armor_hover.model:get_state(player)
+    return armor_hover.player_states[player:get_player_name()].model
+end
+
 local function clear_local_animation(player)
     local none = { x = 0, y = 0 }
     player:set_local_animation(none, none, none, none, 30)
 end
 
 -- Reset the player model.  Called when the user joins or when the model is accidentally set by other mods.
-function armor_hover.model.reset_player_model(self, player)
+function armor_hover.model:reset_player_model(player)
     local player_mod, textures = self:player_model()
     armor_hover.debug("Setting model for player '%s' to '%s'", player:get_player_name(), armor_hover.player_mod)
     player:set_properties({
