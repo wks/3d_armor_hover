@@ -31,10 +31,10 @@ armor_hover.animations = {
     fall        = { track = "Fall" },
     climb       = { track = "Climb" },
     climb_still = { track = "Climb", speed = 0 }, -- on climbable but not moving
-    hover       = { track = "Stand", speed = 0, float = true },
-    hover2      = { track = "Hover2", float = true },
-    fly_slow    = { track = "FlySlow1", float = true },
-    fly_slow2   = { track = "FlySlow2", float = true },
+    hover       = { track = "Stand", speed = 0, float = true, cape = "cape2" },
+    hover2      = { track = "Hover2", float = true, cape = "cape2" },
+    fly_slow    = { track = "FlySlow1", float = true, cape = "cape2" },
+    fly_slow2   = { track = "FlySlow2", float = true, cape = "cape2" },
     fly_fast    = { track = "FlyFast1" },
     fly_fast2   = { track = "FlyFast2" },
 }
@@ -45,8 +45,18 @@ for k, v in pairs(armor_hover.animations) do
     v.priority = 1
 end
 
-armor_hover.mining_animation = { track = "Mine", speed = 30, priority = 3 }
+armor_hover.mining_animation = { track = "Mine", speed = 30, priority = 4 }
 armor_hover.floating_effect = { track = "FloatingEffect", speed = 30, priority = 2 }
+
+-- List of cape effects.  cape1 is intended for hovering and cape2 is intended for slow flying.
+-- However, changing cape effects will break the synchrony between the floating effect and the cape effect.
+-- (Note that we don't stop floating effect when changing between two animations both with floating efffect.)
+-- One possible fix is to keep both cape effects and use priority to switch them,
+-- but it is currently not allowed by the Luanti API.
+armor_hover.cape_effects = {
+    cape1 = { track = "CapeEffect1", speed = 30, priority = 3 },
+    cape2 = { track = "CapeEffect2", speed = 30, priority = 3 },
+}
 
 -------------------------------------
 -- Additional information of tracks
@@ -58,14 +68,14 @@ armor_hover.tracks_info = {
     Sit      = {},
     Lay      = { body_pitch = math.rad(-90) },
     Walk     = {},
-    DuckMove = {},
+    DuckMove = { body_pitch = math.rad(-20), head_pitch = math.rad(20) },
     Swim     = { body_pitch = math.rad(-90), head_pitch = math.rad(85) },
-    Fall     = { body_pitch = math.rad(-90) },
+    Fall     = { body_pitch = math.rad(-90), head_pitch = math.rad(80) },
     Climb    = {},
     Hover2   = {},
     FlySlow1 = { body_pitch = math.rad(-45) },
     FlySlow2 = { body_pitch = math.rad(-55) },
-    FlyFast1 = { body_pitch = math.rad(-90) },
+    FlyFast1 = { body_pitch = math.rad(-90), head_pitch = math.rad(80) },
     FlyFast2 = { body_pitch = math.rad(-90), head_pitch = math.rad(80) },
 }
 

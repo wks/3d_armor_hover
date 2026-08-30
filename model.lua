@@ -58,6 +58,21 @@ armor_hover.model = {
                     player:stop_animation(armor_hover.floating_effect.track)
                 end
             end
+
+            local cape = anim.cape
+
+            if state.cape ~= cape then
+                state.cape = cape
+                if state.current_cape_track then
+                    player:stop_animation(state.current_cape_track)
+                end
+
+                if cape then
+                    local cape_anim = armor_hover.cape_effects[cape]
+                    player:play_animation(cape_anim.track, cape_anim)
+                    state.current_cape_track = cape_anim.track
+                end
+            end
         end
 
         if state.mining ~= mining then
@@ -117,6 +132,7 @@ function armor_hover.model:init_state(player)
         mining = false,
         floating = false,
         current_mtrack = nil,
+        current_cape_track = nil,
     }
 end
 
