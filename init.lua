@@ -267,32 +267,6 @@ function armor_hover.global_step()
 
         armor_hover.model:set_animation(player, new_mstate, mining, emote)
 
-        -- Head Animation
-        -- We depend on the new `player:set_bone_override` method.
-        -- If not available (in older luanti versions), we skip this.
-        if player.set_bone_override then
-            local look_pitch = player:get_look_vertical()
-
-            do
-                local anim = armor_hover.animations[new_mstate]
-                if anim.lock_head then
-                    look_pitch = 0;
-                elseif anim.head_pitch then
-                    look_pitch = look_pitch - anim.head_pitch
-                end
-            end
-
-            local arm_pitch = (controls_lrmb and not attached_to) and look_pitch or 0
-
-            player:set_bone_override("Head", {
-                rotation = { vec = vector.new(look_pitch, 0, 0) }
-            })
-
-            player:set_bone_override("Arm_Right", {
-                rotation = { vec = vector.new(arm_pitch, 0, 0) }
-            })
-        end
-
         if profile then
             local end_time = core.get_us_time()
             core.debug(dump(end_time - start_time))

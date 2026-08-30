@@ -30,24 +30,25 @@ armor_hover.model = {
 
         local state = self:get_state(player)
 
-        if state.mstate ~= mstate then
-            state.mstate = mstate
+        local mstate_def = armor_hover.mstates[mstate]
+        local anim_name
+        if mstate_def.configurable then
+            anim_name = armor_hover.get_chosen_anim_name(player, mstate)
+        else
+            anim_name = mstate_def.anim_name
+        end
+        local anim = armor_hover.animations[anim_name]
+
+        if state.current_anim_name ~= anim_name then
+            state.current_anim_name = anim_name
             if state.current_mtrack then
                 player:stop_animation(state.current_mtrack)
             end
 
-            local mstate_def = armor_hover.mstates[mstate]
-            local anim_name
-            if mstate_def.configurable then
-                anim_name = armor_hover.get_chosen_anim_name(player, mstate)
-            else
-                anim_name = mstate_def.anim_name
-            end
-            local animation = armor_hover.animations[anim_name]
-            player:play_animation(animation.track, animation)
-            state.current_mtrack = animation.track
+            player:play_animation(anim.track, anim)
+            state.current_mtrack = anim.track
 
-            local float = armor_hover.to_boolean(animation.float)
+            local float = armor_hover.to_boolean(anim.float)
 
             if state.floating ~= float then
                 state.floating = float
@@ -67,6 +68,20 @@ armor_hover.model = {
                 player:stop_animation(armor_hover.mining_animation.track)
             end
         end
+
+        local look_pitch = player:get_look_vertical()
+        local track_info = armor_hover.tracks_info[anim.track]
+
+        local head_pitch = anim.lock_head and 0 or look_pitch + track_info.body_pitch + track_info.head_pitch
+        local arm_pitch = not mining and 0 or look_pitch + track_info.body_pitch
+
+        player:set_bone_override("Head", {
+            rotation = { vec = vector.new(head_pitch, 0, 0) }
+        })
+
+        player:set_bone_override("Arm_Right", {
+            rotation = { vec = vector.new(arm_pitch, 0, 0) }
+        })
     end,
     set_skin_10 = function(self, player, texture)
         local state = self:get_state(player)
@@ -98,7 +113,7 @@ armor_hover.model.blank_texture = "blank.png"
 function armor_hover.model:init_state(player)
     armor_hover.player_states[player:get_player_name()].model = {
         textures = { self.blank_texture, self.blank_texture, self.blank_texture, self.blank_texture },
-        mstate = nil,
+        current_anim_name = nil,
         mining = false,
         floating = false,
         current_mtrack = nil,

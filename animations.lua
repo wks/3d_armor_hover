@@ -33,9 +33,9 @@ armor_hover.animations = {
     climb_still = { track = "Climb", speed = 0 }, -- on climbable but not moving
     hover       = { track = "Stand", speed = 0, float = true },
     hover2      = { track = "Hover2", float = true },
-    fly_slow    = { track = "FlySlow1", float = true, head_pitch = math.rad(45) }, -- See model file.
-    fly_slow2   = { track = "FlySlow2", float = true, head_pitch = math.rad(55) }, -- See model file.
-    fly_fast    = { track = "FlyFast1", head_pitch = math.rad(90) },               -- See model file.
+    fly_slow    = { track = "FlySlow1", float = true },
+    fly_slow2   = { track = "FlySlow2", float = true },
+    fly_fast    = { track = "FlyFast1" },
     fly_fast2   = { track = "FlyFast2" },
 }
 
@@ -47,6 +47,32 @@ end
 
 armor_hover.mining_animation = { track = "Mine", speed = 30, priority = 3 }
 armor_hover.floating_effect = { track = "FloatingEffect", speed = 30, priority = 2 }
+
+-------------------------------------
+-- Additional information of tracks
+-- body_pitch is the Rotation X (XYZ Euler) of the Body bone in radians.  Default to 0.
+-- head_pitch is the Rotation X (XYZ Euler) of the Head bone in radians.  Default to 0.
+-- See the Blender model file for details.
+armor_hover.tracks_info = {
+    Stand    = {},
+    Sit      = {},
+    Lay      = { body_pitch = math.rad(-90) },
+    Walk     = {},
+    DuckMove = {},
+    Swim     = { body_pitch = math.rad(-90), head_pitch = math.rad(85) },
+    Fall     = { body_pitch = math.rad(-90) },
+    Climb    = {},
+    Hover2   = {},
+    FlySlow1 = { body_pitch = math.rad(-45) },
+    FlySlow2 = { body_pitch = math.rad(-55) },
+    FlyFast1 = { body_pitch = math.rad(-90) },
+    FlyFast2 = { body_pitch = math.rad(-90), head_pitch = math.rad(80) },
+}
+
+for k, v in pairs(armor_hover.tracks_info) do
+    v.body_pitch = v.body_pitch or 0
+    v.head_pitch = v.head_pitch or 0
+end
 
 --------------------------------------
 -- mstate: movement states
