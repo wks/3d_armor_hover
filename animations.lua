@@ -43,6 +43,7 @@ for k, v in pairs(armor_hover.animations) do
     -- Set default animation speed
     v.speed = v.speed or 30
     v.priority = 1
+    v.blend = 0.2
 end
 
 armor_hover.mining_animation = { track = "Mine", speed = 30, priority = 4 }
