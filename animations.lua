@@ -49,7 +49,7 @@ end
 armor_hover.mining_animation = { track = "Mine", speed = 30, priority = 4 }
 armor_hover.floating_effect = { track = "FloatingEffect", speed = 30, priority = 2 }
 
--- List of cape effects.  cape1 is intended for hovering and cape2 is intended for slow flying.
+-- Cape effects.  cape1 is intended for hovering and cape2 is intended for slow flying.
 -- However, changing cape effects will break the synchrony between the floating effect and the cape effect.
 -- (Note that we don't stop floating effect when changing between two animations both with floating efffect.)
 -- One possible fix is to keep both cape effects and use priority to switch them,
@@ -57,6 +57,14 @@ armor_hover.floating_effect = { track = "FloatingEffect", speed = 30, priority =
 armor_hover.cape_effects = {
     cape1 = { track = "CapeEffect1", speed = 30, priority = 3 },
     cape2 = { track = "CapeEffect2", speed = 30, priority = 3 },
+}
+
+-- Emotes, i.e. custom actions triggered by chat bommands.
+-- This table maps emote names to animation names.
+armor_hover.emotes = {
+    sit = "sit",
+    lay = "lay",
+    swim = "swim",
 }
 
 -------------------------------------

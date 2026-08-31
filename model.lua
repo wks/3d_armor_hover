@@ -25,14 +25,17 @@ armor_hover.model = {
     end,
     on_leaveplayer = function(self, player)
     end,
-    set_animation = function(self, player, mstate, mining, emote)
+    set_animation = function(self, player, mstate, mining)
         mining = armor_hover.to_boolean(mining)
 
         local state = self:get_state(player)
 
         local mstate_def = armor_hover.mstates[mstate]
+        local emote = state.current_emote
         local anim_name
-        if mstate_def.configurable then
+        if emote then
+            anim_name = armor_hover.emotes[emote]
+        elseif mstate_def.configurable then
             anim_name = armor_hover.get_chosen_anim_name(player, mstate)
         else
             anim_name = mstate_def.anim_name
@@ -120,6 +123,19 @@ armor_hover.model = {
         state.textures[4] = texture
         self:reapply_player_textures(player)
     end,
+    set_emote = function(self, player, emote)
+        if not armor_hover.emotes[emote] then
+            local player_name = player:get_player_name()
+            core.chat_send_player(player_name, "Invalid emote: " .. emote)
+            return
+        end
+        local state = self:get_state(player)
+        state.current_emote = emote
+    end,
+    clear_emote = function(self, player)
+        local state = self:get_state(player)
+        state.current_emote = nil
+    end
 }
 
 armor_hover.model.player_model = "3d_armor_hover_character.glb"
@@ -133,6 +149,7 @@ function armor_hover.model:init_state(player)
         floating = false,
         current_mtrack = nil,
         current_cape_track = nil,
+        current_emote = nil,
     }
 end
 

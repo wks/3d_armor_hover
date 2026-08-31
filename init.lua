@@ -74,7 +74,6 @@ dofile(modpath .. "/model.lua")
 dofile(modpath .. "/game_backend.lua")
 dofile(modpath .. "/skin_backend.lua")
 dofile(modpath .. "/gui.lua")
-dofile(modpath .. "/emote.lua")
 
 ------------------------------------------------
 --    Global step to check if player meets    --
@@ -252,12 +251,10 @@ function armor_hover.global_step()
 
         -- Any movement or action will cancel the current emote.
         if controls_wasd or controls_lrmb or controls.jump or controls.sneak then
-            armor_hover.emote:clear_emote(player)
+            armor_hover.model:clear_emote(player)
         end
 
-        local emote = armor_hover.emote.player_emote[player_name]
-
-        armor_hover.model:set_animation(player, new_mstate, mining, emote)
+        armor_hover.model:set_animation(player, new_mstate, mining)
 
         if profile then
             local end_time = core.get_us_time()
@@ -293,12 +290,10 @@ core.register_on_joinplayer(function(player)
     armor_hover.game_backend:on_joinplayer(player)
     armor_hover.refresh_eye_offset(player)
     armor_hover.skin_backend:on_joinplayer(player)
-    armor_hover.emote:on_joinplayer(player)
 end)
 
 core.register_on_leaveplayer(function(player)
     local player_name = player:get_player_name()
-    armor_hover.emote:on_leaveplayer(player)
     armor_hover.skin_backend:on_leaveplayer(player)
     armor_hover.game_backend:on_leaveplayer(player)
     armor_hover.model:on_leaveplayer(player)
@@ -392,11 +387,11 @@ core.register_chatcommand("3ah_gui", {
 })
 
 core.register_chatcommand("3ah_emote", {
-    params = "<" .. table.concat(armor_hover.table_to_keys(armor_hover.emote.emote_map), "|") .. ">",
+    params = "<" .. table.concat(armor_hover.table_to_keys(armor_hover.emotes), "|") .. ">",
     description = "Perform custom actions",
     func = function(name, param)
         local player = core.get_player_by_name(name)
-        armor_hover.emote:set_emote(player, param)
+        armor_hover.model:set_emote(player, param)
     end
 })
 
