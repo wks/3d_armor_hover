@@ -183,17 +183,7 @@ function armor_hover.global_step()
             if fly_anim and
                 fly
             then
-                -- Fall.
-                -- Consider it falling only when flying straight down.
-                -- This velocity is only achievable in the fast mode.
-                if fall_anim and
-                    not controls_wasd and
-                    vel.y < -18.0
-                then
-                    return "fall"
-                end
-
-                -- Use the "Superman fly" animation only when flying fast enough.
+                -- If the player is flying fast enough...
                 -- This velocity is only achievable in the fast mode.
                 if speed > 18.0 and
                     controls_wasd
@@ -230,8 +220,10 @@ function armor_hover.global_step()
                 end
             else
                 -- Fall
+                -- Player starts to take fall damage at this speed.
+                -- See ClientEnvironment::step in the Luanti client.
                 if fall_anim and
-                    vel.y < -0.5
+                    vel.y < -14.0
                 then
                     return "fall"
                 end
