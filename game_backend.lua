@@ -49,13 +49,38 @@ local player_api_backend = {
         player_api.globalstep = function()
             armor_hover.global_step()
         end
+
+        local old_player_api_set_animation = player_api.set_animation
+
+        player_api.set_animation = function(player, anim_name, speed, loop)
+            -- The player_api may call set_animation before we are initialized.
+            -- Just skip it.
+            if not armor_hover.is_joinplayer_called(player) then return end
+
+            -- We try our best to mimic MTG's standard animatins.
+            -- For MTG, we just enumerate animations in player_api/init.lua
+            -- Those animations will only be played when the player is attached.
+            -- This will handle the case of, e.g., driving boat, riding horse, sleeping, etc.
+            -- But we restart using our own animations once the player is detached.
+            if anim_name == "stand" then
+                armor_hover.model:set_game_override(player, "stand", false)
+            elseif anim_name == "lay" then
+                armor_hover.model:set_game_override(player, "lay", false)
+            elseif anim_name == "walk" then
+                armor_hover.model:set_game_override(player, "walk", false)
+            elseif anim_name == "mine" then
+                armor_hover.model:set_game_override(player, "stand", true)
+            elseif anim_name == "walkmine" then
+                armor_hover.model:set_game_override(player, "walk", true)
+            elseif anim_name == "sit" then
+                armor_hover.model:set_game_override(player, "sit", false)
+            end
+        end
     end,
     on_joinplayer = function(self, player)
-        player_api.player_attached[player:get_player_name()] = false
         armor_hover.model:reset_player_model(player)
     end,
     on_leaveplayer = function(self, player)
-        player_api.player_attached[player:get_player_name()] = nil
     end,
     is_attached = function(self, player)
         -- The player has a `get_attach()` method,

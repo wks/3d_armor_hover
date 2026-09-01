@@ -30,16 +30,36 @@ armor_hover.model = {
 
         local state = self:get_state(player)
 
+        local is_attached = armor_hover.game_backend:is_attached(player)
         local mstate_def = armor_hover.mstates[mstate]
         local emote = state.current_emote
-        local anim_name
-        if emote then
-            anim_name = armor_hover.emotes[emote]
-        elseif mstate_def.configurable then
-            anim_name = armor_hover.get_chosen_anim_name(player, mstate)
-        else
-            anim_name = mstate_def.anim_name
+
+        local function determine_anim_name()
+            -- Emote comes first.  It will override even the "game override".
+            -- That's intentional.  It allows something like lying on a boat.
+            if emote then
+                return armor_hover.emotes[emote]
+            end
+
+            if is_attached then
+                local game_anim_name = state.game_override.anim_name
+                if game_anim_name then
+                    -- Override mining, too.
+                    mining = state.game_override.mining
+                    return game_anim_name
+                end
+
+                -- fall through
+            end
+
+            if mstate_def.configurable then
+                return armor_hover.get_chosen_anim_name(player, mstate)
+            else
+                return mstate_def.anim_name
+            end
         end
+
+        local anim_name = determine_anim_name()
         local anim = armor_hover.animations[anim_name]
 
         if state.current_anim_name ~= anim_name then
@@ -100,6 +120,17 @@ armor_hover.model = {
         player:set_bone_override("Arm_Right", {
             rotation = { vec = vector.new(arm_pitch, 0, 0) }
         })
+
+        -- Reset eye offset if the player was attached and is not detached.
+        -- Other mods often set eye offset when attaching a player,
+        -- and reset to (0, 0, 0) when detaching, aiming to reset the offset.
+        -- Since our eye offset is player-customizable,
+        -- we refresh the eye offset.
+        if state.is_attached and not is_attached then
+            armor_hover.refresh_eye_offset(player)
+        end
+
+        state.is_attached = armor_hover.to_boolean(is_attached)
     end,
     set_skin_10 = function(self, player, texture)
         local state = self:get_state(player)
@@ -135,7 +166,14 @@ armor_hover.model = {
     clear_emote = function(self, player)
         local state = self:get_state(player)
         state.current_emote = nil
-    end
+    end,
+    -- The "game override" allows games to override the animation when the player is attached.
+    -- It can implement effects such as driving boats, riding horses, sleeping, etc.
+    set_game_override = function(self, player, anim_name, mining)
+        local state = self:get_state(player)
+        state.game_override.anim_name = anim_name
+        state.game_override.mining = armor_hover.to_boolean(mining)
+    end,
 }
 
 armor_hover.model.player_model = "3d_armor_hover_character.glb"
@@ -150,6 +188,11 @@ function armor_hover.model:init_state(player)
         current_mtrack = nil,
         current_cape_track = nil,
         current_emote = nil,
+        is_attached = false,
+        game_override = {
+            anim_name = nil,
+            mining = false,
+        },
     }
 end
 

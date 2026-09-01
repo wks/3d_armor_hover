@@ -249,8 +249,13 @@ function armor_hover.global_step()
 
         local mining = controls_lrmb
 
-        -- Any movement or action will cancel the current emote.
-        if controls_wasd or controls_lrmb or controls.jump or controls.sneak then
+        -- Any movement or action will cancel the current emote...
+        -- ... unless the player is attached,
+        -- in which case the emote overrides the "game override".
+        -- In other words, the emote has the highest priority.
+        if not attached_to and
+            (controls_wasd or controls_lrmb or controls.jump or controls.sneak)
+        then
             armor_hover.model:clear_emote(player)
         end
 
