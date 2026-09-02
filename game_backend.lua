@@ -57,7 +57,7 @@ local player_api_backend = {
             -- Just skip it.
             if not armor_hover.is_joinplayer_called(player) then return end
 
-            -- We try our best to mimic MTG's standard animatins.
+            -- We try our best to mimic MTG's standard animations.
             -- For MTG, we just enumerate animations in player_api/init.lua
             -- Those animations will only be played when the player is attached.
             -- This will handle the case of, e.g., driving boat, riding horse, sleeping, etc.
