@@ -181,6 +181,29 @@ local mcl_player_backend = {
     end,
 }
 
+local tutorial_backend = {
+    name = "tutorial",
+    initialize = function(self)
+        -- Override their functions to set model/texture/animation because we handle them all.
+        -- Unlike MTG, there is no need to let the game set animation because the player is never attached.
+        default.player_set_model = function() end
+        default.player_set_textures = function() end
+        default.player_set_animation = function() end
+
+        core.register_globalstep(function()
+            armor_hover.global_step()
+        end)
+    end,
+    on_joinplayer = function(self, player)
+        armor_hover.model:reset_player_model(player)
+    end,
+    on_leaveplayer = function(self, player)
+    end,
+    is_attached = function(self, player)
+        return player:get_attach()
+    end,
+}
+
 if armor_hover.is_devtest then
     armor_hover.game_backend = devtest_backend
 elseif armor_hover.is_player_api then
@@ -189,6 +212,8 @@ elseif armor_hover.is_br_player_model then
     armor_hover.game_backend = br_player_model_backend
 elseif armor_hover.is_mcl_player then
     armor_hover.game_backend = mcl_player_backend
+elseif armor_hover.is_tutorial then
+    armor_hover.game_backend = tutorial_backend
 else
     error("We currently need one of the following mods: player_api, br_player_model, mcl_player")
 end
