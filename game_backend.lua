@@ -19,7 +19,6 @@
 
 local devtest_backend = {
     name = "devtest",
-    player_state = {}, -- Map each player to its current animation states
     initialize = function(self)
         core.register_globalstep(function()
             armor_hover.global_step()
@@ -174,7 +173,6 @@ local mcl_player_backend = {
         end
     end,
     on_leaveplayer = function(self, player)
-        self.player_state[player:get_player_name()] = nil
     end,
     is_attached = function(self, player)
         return player:get_attach()
