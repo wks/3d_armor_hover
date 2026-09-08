@@ -64,6 +64,9 @@ function skinsdb_backend:apply_skin_to_player(player, skin)
 
     armor_hover.model:set_armor(player, armor_texture)
     armor_hover.model:set_wielded_item(player, wielditem_texture)
+
+    local hand = skin:get_hand()
+    armor_hover.model:set_hand(player, hand)
 end
 
 local mcl_skins_backend = {

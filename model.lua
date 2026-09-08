@@ -154,6 +154,11 @@ armor_hover.model = {
         state.textures[4] = texture
         self:reapply_player_textures(player)
     end,
+    set_hand = function(self, player, hand)
+        local state = self:get_state(player)
+        state.hand = hand
+        self:reset_hand(player)
+    end,
     set_emote = function(self, player, emote)
         if not armor_hover.emotes[emote] then
             local player_name = player:get_player_name()
@@ -182,6 +187,7 @@ armor_hover.model.blank_texture = "blank.png"
 function armor_hover.model:init_state(player)
     armor_hover.player_states[player:get_player_name()].model = {
         textures = { self.blank_texture, self.blank_texture, self.blank_texture, self.blank_texture },
+        hand = nil,
         current_anim_name = nil,
         mining = false,
         floating = false,
@@ -228,4 +234,27 @@ function armor_hover.model:reapply_player_textures(player)
     player:set_properties({
         textures = textures,
     })
+end
+
+-- Reset the hand model.
+function armor_hover.model:reset_hand(player)
+    local state = self:get_state(player)
+    local hand = state.hand
+    armor_hover.debug("Setting hand for player '%s'", player:get_player_name())
+
+    if armor_hover.is_hand_monoid then
+        if hand then
+            -- Note: The last one that calls add_change takes precedence.
+            -- There is no guarantee that our hand will take effect if another mod registers the hand, too.
+            hand_monoid.monoid:add_change(player, { name = hand }, "armor_hover:hand")
+        else
+            hand_monoid.monoid:del_change(player, "armor_hover:hand")
+        end
+    else
+        local inventory = player:get_inventory()
+        if inventory:get_size("hand") ~= 1 then
+            inventory:set_size("hand", 1)
+        end
+        inventory:set_stack("hand", 1, hand or "")
+    end
 end

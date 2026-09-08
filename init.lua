@@ -56,6 +56,7 @@ armor_hover.is_player_api      = core.get_modpath("player_api")
 armor_hover.is_br_player_model = core.get_modpath("br_player_model")
 armor_hover.is_mcl_player      = core.get_modpath("mcl_player")
 armor_hover.is_tutorial        = core.get_game_info().id == "tutorial"
+armor_hover.is_hand_monoid     = core.get_modpath("hand_monoid")
 
 ---------------------------------
 -- Volatile per-player storage
