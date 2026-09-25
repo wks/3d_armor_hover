@@ -25,7 +25,10 @@ local modpath        = core.get_modpath(modname)
 
 local debug          = core.settings:get_bool("armor_hover.debug", false)
 local fly_anim       = core.settings:get_bool("armor_hover.fly_anim", true)
+local check_fly      = core.settings:get_bool("armor_hover.check_fly", false)
+local check_fly_dist = tonumber(core.settings:get("armor_hover.check_fly_dist")) or 3
 local fall_anim      = core.settings:get_bool("armor_hover.fall_anim", true)
+local fly_fall       = core.settings:get_bool("armor_hover.fly_fall", false)
 local fall_tv        = tonumber(core.settings:get("armor_hover.fall_tv")) or 150
 -- Convert kp/h back to number of -y blocks per 0.05 of a second.
 fall_tv              = -1 * (fall_tv / 3.7)
@@ -99,9 +102,14 @@ function armor_hover.global_step()
 
         local privs         = core.get_player_privs(player:get_player_name())
 
-        -- Is there a way to detect if the player has enabled fly (freemove) mode
-        -- instead of checking the "fly" privilege?
-        local fly           = privs.fly
+        -- Is the player flying?
+        -- Currently the server has no way to test if the client has enabled fly (freemove) mode,
+        -- so we just use the "fly" privilege.
+        -- Additionally, if the check_fly option is on,
+        -- we reuse the logic from the 3D Armor: Fly & Swim, that is,
+        -- a player is not considered flying if not above flyable nodes.
+        local fly           = privs.fly and
+            (not check_fly or armor_hover.nodes_down_flyable(pos, check_fly_dist))
 
         local attached_to   = armor_hover.game_backend:is_attached(player)
 
@@ -184,6 +192,14 @@ function armor_hover.global_step()
             if fly_anim and
                 fly
             then
+                -- If fly_fall is enabled, we check falling condition when flying.
+                if fly_fall and
+                    fall_anim and
+                    vel.y < -14.0
+                then
+                    return "fall"
+                end
+
                 -- If the player is flying fast enough...
                 -- This velocity is only achievable in the fast mode.
                 if speed > 18.0 and

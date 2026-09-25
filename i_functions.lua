@@ -165,3 +165,20 @@ function armor_hover.to_boolean(value)
         return false
     end
 end
+
+-- Check if n nodes from (including) the player's feet are flyable
+function armor_hover.nodes_down_flyable(pos, n)
+    for dy = 0, n - 1 do
+        local pos2 = pos + vector.new(0, -dy, 0)
+        local node_name = core.get_node(pos2).name
+        local node = core.registered_nodes[node_name]
+
+        -- Unknown nodes are consider non-flyable.
+        if not node then return false end
+
+        local drawtype = node.drawtype
+        if drawtype ~= "airlike" then return false end
+    end
+
+    return true
+end

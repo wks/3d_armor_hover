@@ -46,6 +46,12 @@ This is expected because this mod runs on the server side.
 Due to the way Luanti servers and clients work, there is currently no way for the mod to detect if the client has enabled fly (freemove) mode or not.
 So this mod simply uses the "fly" privilege to detect if a player is flying.
 
+If you often toggle "fly mode" on and off, you may want to enable "Check flyability" in the mod settings.
+When enabled, a player that has "fly" privilege is still considered not flying if not above air nodes.
+Then the character will appear walking when moving close to the ground.
+Note that this solution is not perfect.
+If you jump over cliff or even stairs, your character will still appear flying because there are too many air blocks below.
+
 [Aerial]: https://content.luanti.org/packages/EmptyStar/aerial/
 [Ethereal]: https://content.luanti.org/packages/TenPlus1/ethereal/
 

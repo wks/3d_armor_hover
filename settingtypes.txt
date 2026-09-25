@@ -4,8 +4,24 @@ armor_hover.debug (Enable debugging) bool false
 #    Enable Fly Animation, including all hovering and slow/fast flying animations.
 armor_hover.fly_anim (Enable fly animation) bool true
 
+#    If true, a player with the "fly" privilege is considered not flying if the player is not above air blocks.
+#    Useful if the player often switches the fly mode on and off.
+#    The default is false, i.e. a player is considered flying as long as it has the "fly" privilege.
+armor_hover.check_fly (Check flyability) bool false
+
+#    Used only when "Check flyability" is true.
+#    The number of air blocks needed to be under (including) the player's feet for the player to be considered flying.
+#    The default value 3 is OK for Minetest Game.
+#    If you use any mods that increase the jump height, you should increase this value.
+armor_hover.check_fly_dist (Flyability distance) int 3 1
+
 #    Enable Fall Animation
 armor_hover.fall_anim (Enable fall animation) bool true
+
+#    If true, it will play falling animation when flying down too fast.
+#    Useful when used together with "Check flyability".
+#    The default is false, i.e. flying players never play falling animations.
+armor_hover.fly_fall (Enable falling when flying) bool false
 
 #    Terminal Velocity Speed kp/h
 armor_hover.fall_tv (Set terminal velocity speed - recommend not exceeding 150 kp/h) int 150
