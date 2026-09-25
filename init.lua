@@ -23,17 +23,17 @@ armor_hover          = {}
 local modname        = core.get_current_modname()
 local modpath        = core.get_modpath(modname)
 
-local debug          = core.settings:get_bool("debug", false)
-local fly_anim       = core.settings:get_bool("fly_anim", true)
-local fall_anim      = core.settings:get_bool("fall_anim", true)
-local fall_tv        = tonumber(core.settings:get("fall_tv", true)) or 150
+local debug          = core.settings:get_bool("armor_hover.debug", false)
+local fly_anim       = core.settings:get_bool("armor_hover.fly_anim", true)
+local fall_anim      = core.settings:get_bool("armor_hover.fall_anim", true)
+local fall_tv        = tonumber(core.settings:get("armor_hover.fall_tv")) or 150
 -- Convert kp/h back to number of -y blocks per 0.05 of a second.
 fall_tv              = -1 * (fall_tv / 3.7)
-local swim_anim      = core.settings:get_bool("swim_anim", true)
-local swim_not_move  = core.settings:get_bool("swim_not_move", false)
-local climb_anim     = core.settings:get_bool("climb_anim", true)
-local crouch_anim    = core.settings:get_bool("crouch_anim", true)
-local climb_when_fly = core.settings:get_bool("climb_when_fly", false)
+local swim_anim      = core.settings:get_bool("armor_hover.swim_anim", true)
+local swim_not_move  = core.settings:get_bool("armor_hover.swim_not_move", false)
+local climb_anim     = core.settings:get_bool("armor_hover.climb_anim", true)
+local crouch_anim    = core.settings:get_bool("armor_hover.crouch_anim", true)
+local climb_when_fly = core.settings:get_bool("armor_hover.climb_when_fly", false)
 
 -----------------------
 -- Debugging
